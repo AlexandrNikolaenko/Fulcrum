@@ -1,6 +1,7 @@
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import localFont from 'next/font/local';
+import Header from "./components/header";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${unbounded.className} ${montserrat.variable} antialiased`}
       >
+        <Header />
         {children}
       </body>
     </html>
