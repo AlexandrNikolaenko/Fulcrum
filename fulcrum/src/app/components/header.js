@@ -1,10 +1,6 @@
 import { BaseLink } from "./buttons";
 import Link from "next/link";
 
-function enter() {
-    return
-}
-
 export default function Header() {
 
     return (

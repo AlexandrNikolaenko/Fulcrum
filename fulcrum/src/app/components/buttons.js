@@ -29,3 +29,9 @@ export function DeleteButton({action}) {
         <button onClick={action} className="text-base rounded-base py-[6px] px-5 bg-white shadow-center text-red active:text-dark-red focus:text-dark-red hover:text-dark-red">Удалить</button>
     )
 }
+
+export function SortButton({action}) {
+    return (
+        <button onClick={action} className="p-2.5 rounded-base bg-white shadow-center"><Image src={'/Sort.svg'} alt="sort" width={20} height={20}/></button>
+    )
+}
