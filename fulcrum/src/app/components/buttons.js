@@ -35,3 +35,9 @@ export function SortButton({action}) {
         <button onClick={action} className="p-2.5 rounded-base bg-white shadow-center"><Image src={'/Sort.svg'} alt="sort" width={20} height={20}/></button>
     )
 }
+
+export function FilterButton({action}) {
+    return (
+        <button onClick={action} className="p-2.5 rounded-base bg-white shadow-center"><Image src={'/Filter.svg'} alt="filter" width={20} height={20}/></button>
+    )
+}
