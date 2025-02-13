@@ -1,12 +1,15 @@
 'use client'
 
-import { BaseButton } from "@/app/components/buttons"
+import { BaseButton } from "@/app/components/buttons";
+import { useState } from "react";
 
-const filters = [
+const defaultFilters = [
 
 ]
 
 export default function Filters({action}) {
+    let [filters, setFilters] = useState({});
+
     let amount
     let message
     
@@ -20,14 +23,14 @@ export default function Filters({action}) {
 
     return (
         <form className="flex flex-col gap-2.5 items-start w-[272px]">
-            {filters.map(filter => <Filter key={filter.id} filter={filter}/>)}
+            {defaultFilters.map(filter => <Filter key={filter.id} filter={filter} change={setFilters} start={filters} id={filter.id}/>)}
             <BaseButton text={message} onClick={show}/>
         </form>
     )
 }
 
-function Filter({filter}) {
+function Filter({filter, change, start, id}) {
     return (
-        <input></input>
+        <input id="" onChange={(e) => change()} value={start[id - 1].value}></input>
     )
 }
