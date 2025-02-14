@@ -7,6 +7,7 @@ const toml = require('toml');
 const mysql = require('mysql2');
 const crypto = require('crypto');
 const base64url = require('base64url');
+const nodemailer = require("nodemailer");
 
 const app = express();
 
@@ -33,6 +34,16 @@ class Connetion {
 }
 
 const config = toml.parse(fs.readFileSync('./config.toml', 'utf-8'));
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: {
+      user: "alexnikol092004@gmail.com",
+      pass: config.gmail.emailkey,
+    },
+});
 
 app.use(cookieParser());
 app.use((req, _, next) => {
@@ -167,6 +178,15 @@ app.get('/auth/signup', function(req, res) {
             if (e) throw new Error(e);
             if (result.length == 0) {
                 res.status(200);
+                transporter.sendMail({
+                    from: '<alexnikol092004@gmail.com>',
+                    to: `${req.query.email}`,
+                    subject: "Подтверждение почты",
+                    text: `Для подтверждения адреса электронной почты перейдите по ссылке: http://${host}:3000/${base64url(JSON.stringify({
+                        email: req.query.email,
+                        password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
+                    }))}`
+                })
                 res.send({link: base64url(JSON.stringify({
                     email: req.query.email,
                     password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
