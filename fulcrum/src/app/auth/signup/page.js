@@ -6,8 +6,19 @@ import OrLine from "../components/or"
 import Link from "next/link"
 
 export default function SignUp() {
-    function send(e) {
-        return
+    let [isSuccess, setIsSuccess] = useState(false);
+
+    async function send(e) {
+        e.preventDefault();
+        let clearData = Object.fromEntries(new FormData(document.getElementById('login')))
+        let res = await fetch(`${API_HOST}/auth/signup?email=${clearData.email}&password=${clearData.password}'`, );
+        if (res.status == 200) setIsSuccess(true);
+    }
+
+    if (isSuccess) {
+        return (
+            <p className="text-lg text-dark">Подтвердите адрес электронной почты, перейдя по ссылке из отправленного письма</p>
+        )
     }
 
     return (

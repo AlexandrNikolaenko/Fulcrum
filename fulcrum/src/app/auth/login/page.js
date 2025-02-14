@@ -3,19 +3,21 @@
 import { BaseButton } from "@/app/components/buttons"
 import {LableInput, InputAuthField} from "../components/inputs"
 import OrLine from "../components/or"
-import Link from "next/link"
+import Link from "next/link";
+import { APP_HOST, API_HOST } from "@/app/components/host";
+import { redirect } from "next/navigation";
 
 export default function Login() {
-    function send(e) {
-        return
+    async function send(e) {
+        e.preventDefault();
+        let clearData = Object.fromEntries(new FormData(document.getElementById('login')))
+        let res = await fetch(`${API_HOST}/auth/login?email=${clearData.email}&password=${clearData.password}'`, );
+        if (res.status == 200) redirect(`${APP_HOST}/`);
     }
 
     return(
         <>
-            <form id="signup" className="flex flex-col gap-y-2.5 w-full" onSubmit={(e) => {
-                    e.preventDefault();
-                    send();
-                }}>
+            <form id="login" className="flex flex-col gap-y-2.5 w-full" onSubmit={(e) => send(e)}>
                 <LableInput htmlFor={'email'}>Введите адрес электронной почты</LableInput>
                 <InputAuthField name={'email'} type={'email'} placeholder={'Email'}/>
                 <LableInput htmlFor={'password'}>Введите пароль</LableInput>
