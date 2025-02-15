@@ -22,7 +22,7 @@ let plugs = [
 
 export default function AdsList({filters}) {
     let [isLoad, setIsLoad] = useState(false);
-    let ads;
+    let ads = [];
 
     if ((ads.length == 0 || !ads) && !isLoad) {
         return <ul className="flex flex-col gap-2.5 w-full">{plugs.map(plug => <Plug key={plug.id} className={'w-full h-[239px] rounded-large bg-white shadow-center'}/>)}</ul>

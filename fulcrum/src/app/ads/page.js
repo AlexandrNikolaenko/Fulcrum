@@ -19,7 +19,7 @@ export default function Page() {
         <div className="flex flex-col items-center gap-7 pt-[110px] wrapper">
             <Search />
             <div className="flex gap-16 items-start w-full">
-                <Filter action={show} filters={filters}/>
+                <Filter action={show}/>
                 <AdsList filters={showResults}/>
             </div>
         </div>
