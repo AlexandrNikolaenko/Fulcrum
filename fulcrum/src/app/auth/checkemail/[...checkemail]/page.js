@@ -3,15 +3,15 @@
 import { API_HOST, APP_HOST } from "@/app/components/host";
 import { redirect } from "next/navigation";
 
-export default async function Check({parameters}) {
-    let link = parameters.checkemail[0];
+export default async function Check({params}) {
+    let link = params.checkemail[0];
     let res = await fetch(`${API_HOST}/auth/adduser`, {
         headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*"
         },
         method: 'POST',
-        body: JSON.parse(`{'link': ${link}}`)
+        body: JSON.stringify({link: link})
     });
     if (res.status == 200) redirect(`${APP_HOST}/`, 'replace');
     else {

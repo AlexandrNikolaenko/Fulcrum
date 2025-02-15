@@ -1,6 +1,6 @@
 'use client'
 
-import { BaseButton } from "@/app/components/buttons"
+import { BaseButton, SubmitButton } from "@/app/components/buttons"
 import {LableInput, InputAuthField} from "../components/inputs"
 import OrLine from "../components/or"
 import Link from "next/link";
@@ -11,8 +11,11 @@ export default function Login() {
     async function send(e) {
         e.preventDefault();
         let clearData = Object.fromEntries(new FormData(document.getElementById('login')))
-        let res = await fetch(`${API_HOST}/auth/login?email=${clearData.email}&password=${clearData.password}'`, );
-        if (res.status == 200) redirect(`${APP_HOST}/`);
+        let res = await fetch(`${API_HOST}/auth/login?email=${clearData.email}&password=${clearData.password}`, {method: 'GET', credentials: 'include'});
+        // console.log(res.headers.getSetCookie());
+        // let data = await res.json();
+        // console.log(data);
+        // if (res.status == 200) redirect(`${APP_HOST}/`);
     }
 
     return(
@@ -23,10 +26,7 @@ export default function Login() {
                 <LableInput htmlFor={'password'}>Введите пароль</LableInput>
                 <InputAuthField name={'password'} type={'password'} placeholder={'Пароль'} autoFill={'new-password'}/>
                 <div className="flex justify-center">
-                    <BaseButton text={'Войти'} action={(e) => {
-                        e.preventDefault();
-                        document.getElementById('signup').submit();
-                    }}/>
+                    <SubmitButton text={'Войти'} />
                 </div>
             </form>
             <OrLine />

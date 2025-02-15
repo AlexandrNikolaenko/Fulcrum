@@ -13,6 +13,9 @@ const app = express();
 
 const host = 'localhost';
 
+const refreshAge = 4320000;
+const accesAge = 60000;
+
 class Connetion {
     constructor(connectCallback) {
         this.connection = mysql.createConnection({
@@ -46,7 +49,7 @@ const transporter = nodemailer.createTransport({
 });
 
 app.use(cookieParser());
-app.use((req, _, next) => {
+app.use((req, res, next) => {
     try {
         if (req.cookies.access) {
             let access = req.cookies.access.split('.');
@@ -69,11 +72,11 @@ app.use((req, _, next) => {
                         ctp: "JWT"
                     })), base64url(JSON.stringify({
                         iss: 'fulcrum',
-                        exp: Number(newId.split('.')[0]) + 60000,
+                        exp: Number(newId.split('.')[0]) + accesAge,
                         id: newId   
                     }))];
                     let newRefresh = base64url(JSON.stringify({
-                        exp: Number(newId.split('.')[0]) + 4320000,
+                        exp: Number(newId.split('.')[0]) + refreshAge,
                         id: newId   
                     }));
 
@@ -84,17 +87,18 @@ app.use((req, _, next) => {
             }
         }
     } catch(e) {console.log(e);}
-
+    
     next();
 })
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json());
 
-async function setTokens(res, {userId, email}) {
+function getTokens(res, {userId, email}) {
     let newId
     if (userId) newId = `${Date.now()}.${userId}`;
     else {
         try {
+            console.log('here');
             const connection = new Connetion((err) => {
                 if (err) throw new Error(err);
             });
@@ -102,12 +106,13 @@ async function setTokens(res, {userId, email}) {
             connection.query(`select id from Users where email = '${email}'`, function(e, result) {
                 if (e) throw new Error(e);
                 newId = result[0].id;
-            })
+            });
+
+            connection.end();
 
         } catch (e) {
             console.log(e);
             res.status(500);
-            res.send();
         }
     }
     let newAccess = [base64url(JSON.stringify({
@@ -116,51 +121,60 @@ async function setTokens(res, {userId, email}) {
         ctp: "JWT"
     })), base64url(JSON.stringify({
         iss: 'fulcrum',
-        exp: Number(newId.split('.')[0]) + 60000,
+        exp: Number(newId.split('.')[0]) + accesAge,
         id: newId   
     }))];
     let newRefresh = base64url(JSON.stringify({
-        exp: Number(newId.split('.')[0]) + 4320000,
+        exp: Number(newId.split('.')[0]) + refreshAge,
         id: newId   
     }));
 
-    res.cookie('access', `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`);
-    res.cookie('refresh', `${newRefresh}`, {httpOnly: true});
+    return {
+        access: `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`,
+        refresh: `${newRefresh}`
+    }
 }
 
 app.get('/auth/login', function(req, res) {
     res.set({
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
     });
 
     try {
         const connection = new Connetion((err) => {
             if (err) console.log(err);
-            else console.log('Connection is success');
         });
 
-        let callback = () => {return};
-
-        connection.query(`select id, password from User where email = '${req.query.password}'`, function(e, result) {
+        connection.query(`select id, password from Users where email = '${req.query.email}'`, function(e, result) {
             if (e) throw new Error(e);
-            if (result.length == 0) res.status(401);
-            else if (result[0].password == crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')) {
-                callback = () => {
-                    res.status(200);
-                    setTokens(res, result[0].id);
-                }
+            if (result.length == 0) {
+                res.status(401);
+                res.send();
             }
-            else res.status(401);
+            else if (result[0].password == crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')) {
+                res.status(200);
+                let {access, refresh} = getTokens(res, {userId: result[0].id});
+                res.cookie('access', access);
+                res.cookie('refresh', refresh, {httpOnly: true});
+                console.log(res.getHeaders()['set-cookie']);
+                res.send();
+            }
+            else {
+                res.status(401);
+                res.send();
+            }
         })
 
-        connection.end(callback);
+        connection.end();
     } catch (e) {
         console.log(e);
         res.status(500);
+        res.send();
     }
 
-    res.send();
+    
 });
 
 app.get('/auth/signup', function(req, res) {
@@ -168,6 +182,8 @@ app.get('/auth/signup', function(req, res) {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     });
+
+    let returnData = {}
 
     try {
         const connection = new Connetion((err) => {
@@ -178,19 +194,55 @@ app.get('/auth/signup', function(req, res) {
             if (e) throw new Error(e);
             if (result.length == 0) {
                 res.status(200);
+                let link = `http://${host}:3000/auth/checkemail/${base64url(JSON.stringify({
+                        email: req.query.email,
+                        password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
+                    }))}`
                 transporter.sendMail({
                     from: '<alexnikol092004@gmail.com>',
                     to: `${req.query.email}`,
                     subject: "Подтверждение почты",
-                    text: `Для подтверждения адреса электронной почты перейдите по ссылке: http://${host}:3000/${base64url(JSON.stringify({
-                        email: req.query.email,
-                        password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
-                    }))}`
-                })
-                res.send({link: base64url(JSON.stringify({
+                    text: `Для подтверждения адреса электронной почты перейдите по ссылке: ${link}`
+                });
+                
+                returnData = {link: base64url(JSON.stringify({
                     email: req.query.email,
                     password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
-                }))});
+                }))}
+            }
+            else res.status(401);
+        });
+    
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+    }    
+
+    res.send(returnData);
+});
+
+app.post('/auth/adduser', function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        const connection = new Connetion((err) => {
+            if (err) throw new Error(err);
+        });
+
+        let {email, password} = JSON.parse(Buffer.from(req.body.link, 'base64').toString('utf8'));
+    
+        connection.query(`insert into Users (email, password) values ('${email}', '${password}')`, function(e, result) {
+            if (e) throw new Error(e);
+            if (result.length == 0) {
+                res.status(200);
+                let {access, refresh} = getTokens(res, {email: email});
+                res.cookie('access', access, {maxAge: accesAge});
+                res.cookie('refresh', refresh, {httpOnly: true, maxAge: refreshAge});
             }
             else res.status(401);
         });
@@ -204,35 +256,50 @@ app.get('/auth/signup', function(req, res) {
     res.send();
 });
 
-app.post('/auth/adduser', function(req, res) {
+app.get('/getuser', function(req, res) {
     res.set({
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
     });
 
+    let data = {}
+    
     try {
-        const connection = new Connetion((err) => {
-            if (err) throw new Error(err);
-        });
+        if (typeof req.user != 'undefined') {
+            const connection = new Connetion((e) => {
+                if (e) throw new Error(e);
+            });
+    
+            connection.query(`select username from Users where id = ${req.user}`, function(err, result) {
+                if (err) throw new Error(err);
+                if (result.length != 0) {
+                    res.status(200);
+                    data = {
+                        id: req.user,
+                        name: result[0].username
+                    }
+                    console.log(data);
+                    res.send(data);
+                } else {
+                    res.status(401);
+                    res.send(data);
+                }
+            });
 
-        let {email, password} = JSON.parse(Buffer.from(req.body.link).toString('utf8'));
-    
-        connection.query(`insert into Users (email, password) values ('${email}', '${password}')`, function(e, result) {
-            if (e) throw new Error(e);
-            if (result.length == 0) {
-                res.status(200);
-                setTokens();
-            }
-            else res.status(401);
-        });
-    
-        connection.end();
-    } catch (e) {
+            connection.end();
+        } else {
+            res.status(401);
+            res.send(data);
+        }
+        
+    } catch(e) {
         console.log(e);
         res.status(500);
-    }    
+        res.send(data);
+    }
 
-    res.send();
+    
 })
 
 app.listen(5000);

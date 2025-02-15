@@ -9,6 +9,12 @@ export function BaseButton({text, action}) {
     )
 }
 
+export function SubmitButton({text}) {
+    return (
+        <button type={'submit'} className="text-base text-white rounded-base py-[6px] px-5 bg-base-blue active:bg-dark-blue focus:bg-dark-blue hover:bg-dark-blue transition-all">{text}</button>
+    )
+}
+
 export function BaseLink({text, href}) {
     return(
         <Link href={href} className="text-base text-white rounded-base py-[6px] px-5 bg-base-blue active:bg-dark-blue focus:bg-dark-blue hover:bg-dark-blue">{text}</Link>

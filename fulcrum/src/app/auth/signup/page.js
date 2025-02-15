@@ -1,17 +1,19 @@
 'use client'
 
-import { BaseButton } from "@/app/components/buttons"
+import { SubmitButton } from "@/app/components/buttons"
 import {LableInput, InputAuthField} from "../components/inputs"
 import OrLine from "../components/or"
 import Link from "next/link"
+import { useState } from "react"
+import { API_HOST, APP_HOST } from "@/app/components/host"
 
 export default function SignUp() {
     let [isSuccess, setIsSuccess] = useState(false);
 
-    async function send(e) {
-        e.preventDefault();
-        let clearData = Object.fromEntries(new FormData(document.getElementById('login')))
-        let res = await fetch(`${API_HOST}/auth/signup?email=${clearData.email}&password=${clearData.password}'`, );
+    async function send() {
+        console.log('done');
+        let clearData = Object.fromEntries(new FormData(document.getElementById('signup')))
+        let res = await fetch(`${API_HOST}/auth/signup?email=${clearData.email}&password=${clearData.password}`, {method: 'GET'});
         if (res.status == 200) setIsSuccess(true);
     }
 
@@ -34,10 +36,7 @@ export default function SignUp() {
                 <LableInput htmlFor={'repassword'}>Повторите пароль</LableInput>
                 <InputAuthField name={'repassword'} type={'password'} placeholder={'Пароль'} autoFill={'new-password'}/>
                 <div className="flex justify-center">
-                    <BaseButton text={'Зарегистрироваться'} action={(e) => {
-                        e.preventDefault();
-                        document.getElementById('signup').submit();
-                    }}/>
+                    <SubmitButton text={'Зарегистрироваться'}/>
                 </div>
             </form>
             <OrLine />

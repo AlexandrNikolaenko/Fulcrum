@@ -171,10 +171,10 @@ const Users = sequelize.define(
     }
 );
 
-Users.sync({alter: true});
+// Users.sync({alter: true});
 
-Ads.sync({alter: true});
+// Ads.sync({alter: true});
 
-Helps.sync({alter: true});
+// Helps.sync({alter: true});
 
-Feedbacks.sync({alter: true});
+// Feedbacks.sync({alter: true});
