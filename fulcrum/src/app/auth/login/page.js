@@ -12,10 +12,7 @@ export default function Login() {
         e.preventDefault();
         let clearData = Object.fromEntries(new FormData(document.getElementById('login')))
         let res = await fetch(`${API_HOST}/auth/login?email=${clearData.email}&password=${clearData.password}`, {method: 'GET', credentials: 'include'});
-        // console.log(res.headers.getSetCookie());
-        // let data = await res.json();
-        // console.log(data);
-        // if (res.status == 200) redirect(`${APP_HOST}/`);
+        if (res.status == 200) redirect(`${APP_HOST}/`);
     }
 
     return(

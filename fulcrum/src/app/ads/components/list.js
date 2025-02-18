@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Plug from "@/app/components/plug";
 import Image from "next/image";
 import { BaseButton } from "@/app/components/buttons";
+import { API_HOST } from "@/app/components/host";
 
 let plugs = [
     {
@@ -22,7 +23,22 @@ let plugs = [
 
 export default function AdsList({filters}) {
     let [isLoad, setIsLoad] = useState(false);
-    let ads = [];
+    let [ads, setAds] = useState([]);
+    let lastFilters = useRef({});
+
+    useEffect(() => {
+        async function getData() {
+            if (lastFilters.current != filters) {
+                let res = await fetch(`${API_HOST}/ads?university=${filters.university}&subject=${filters.subject}&course=${filters.course}`, {method: 'GET'});
+                if (res.status == 200) {
+                    lastFilters.current = filters;
+                    setAds((await res.json()).ads);
+                }
+            }
+            setIsLoad(true);
+        }
+        getData();
+    })
 
     if ((ads.length == 0 || !ads) && !isLoad) {
         return <ul className="flex flex-col gap-2.5 w-full">{plugs.map(plug => <Plug key={plug.id} className={'w-full h-[239px] rounded-large bg-white shadow-center'}/>)}</ul>
@@ -67,7 +83,23 @@ function Like({like, id}) {
     let [isLike, setIsLike] = useState(like);
     let src
     if (isLike) src = '/Like.svg';
-    else src = '/notLike.svg'
+    else src = '/notLike.svg';
 
-    return <button onClick={setIsLike(!isLike)} className="w-fit h-fit"><Image alt="like" src={src} width={24} height={24}></Image></button>
+    async function setLike() {
+        let res = await fetch(`${API_HOST}/ads/like`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "http://localhost:3000",
+            },
+            credentials: 'include',
+            body: JSON.stringify({id: id, like: !like})
+        });
+        if (res.status == 200) setIsLike(!setIsLike);
+        else if (res.status == 401) alert('Чтобы отметить объявление войдите в систему или зарегистрируйтесь');
+    }
+
+    return <button onClick={() => {
+        setLike();
+    }} className="w-fit h-fit"><Image alt="like" src={src} width={24} height={24}></Image></button>
 }

@@ -298,8 +298,129 @@ app.get('/getuser', function(req, res) {
         res.status(500);
         res.send(data);
     }
+});
 
+app.get('/ads/amount', function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+    });
+
+    try {
+        let filter = [];
+        if (req.query.university) filter.push({name: 'university', val: req.query.university});
+        if (req.query.subject) filter.push({name: 'subject', val: req.query.subject});
+        if (req.query.course) filter.push({name: 'course', val: req.query.course});
+        let stroke = 'where ';
+        filter.forEach((elem) => {
+            stroke.concat(`${elem.name} = '${elem.val}' and `)
+        });
+        if (stroke == 'where ') stroke = '';
+        else stroke = stroke.slice(0, stroke.length - 5);
+
+        const connection = new Connetion((err) => {
+            if (err) throw new Error(err);
+        });
+
+        connection.query(`select count(*) as amount from Ads ${stroke}`, function (e, result) {
+            if (e) throw new Error(e);
+            else {
+                res.status(200);
+                res.send({amount: result[0].amount});
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.get('/ads', function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+    });
+
+    try {
+        let filter = [];
+        if (req.query.university) filter.push({name: 'university', val: req.query.university});
+        if (req.query.subject) filter.push({name: 'subject', val: req.query.subject});
+        if (req.query.course) filter.push({name: 'course', val: req.query.course});
+        let stroke = 'where ';
+        filter.forEach((elem) => {
+            stroke.concat(`${elem.name} = '${elem.val}' and `)
+        });
+        if (stroke == 'where ') stroke = '';
+        else stroke = stroke.slice(0, stroke.length - 5);
+
+        const connection = new Connetion((err) => {
+            if (err) throw new Error(err);
+        });
+
+        connection.query(`select * from Ads ${stroke}`, function (e, result) {
+            if (e) throw new Error(e);
+            else {
+                res.status(200);
+                res.send({ads: result});
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.post('/ads/like', function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        if (req.user) {
+            const connection = new Connetion((err) => {
+                if (err) throw new Error(err);
+            });
+
+            let likes = [];
     
+            connection.query(`select ad_like from Users where user_id = ${req.user}`, function(e, result) {
+                if (e) throw new Error(e);
+                likes.push(JSON.parse(result[0].ad_like));
+                if (req.query.like) likes.push(req.query.id);
+                else likes = likes.filter((likeId) => likeId != req.query.id);
+            });
+    
+            connection.end((err) => {
+                if (err) throw new Error(err);
+                const con = new Connetion((error) => {
+                    if (error) throw new Error(error);
+                });
+
+                con.query(`insert Users set ad_like = ${JSON.stringify(likes)} where id = ${req.user}`, function(e, _) {
+                    if (e) throw new Error(e);
+                    res.status(200);
+                    res.send();
+                });
+
+                con.end();
+            });
+        } else {
+            res.status(401);
+            res.send();
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
 })
 
 app.listen(5000);
