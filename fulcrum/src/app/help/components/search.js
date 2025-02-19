@@ -3,11 +3,13 @@
 import SearchField from "@/app/components/searchField";
 import { BaseButton, SortButton, FilterButton } from "@/app/components/buttons";
 import Filters from "./filter";
+import { useState } from "react";
 
 export default function Search() {
+    let [isShow, setIsShow] = useState(false);
+
     function sort() {return}
     function search() {return}
-    function filter() {return}
 
     return (
         <>
@@ -16,10 +18,10 @@ export default function Search() {
                     <SearchField placeholder={'Найдите нужный вам предмет или помощника'} name={'query'}/>
                     <BaseButton action={search} text={'Найти'}/>
                 </form>
-                <FilterButton action={filter}/>
+                <FilterButton action={() => setIsShow(!isShow)}/>
                 <SortButton action={sort}/>
             </div>
-            <Filters />
+            <Filters isShow={isShow}/>
         </>
     )
 }

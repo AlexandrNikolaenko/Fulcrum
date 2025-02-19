@@ -13,8 +13,8 @@ const app = express();
 
 const host = 'localhost';
 
-const refreshAge = 4320000;
-const accesAge = 60000;
+const refreshAge = 4320000*1000;
+const accesAge = 60000*1000;
 
 class Connetion {
     constructor(connectCallback) {
