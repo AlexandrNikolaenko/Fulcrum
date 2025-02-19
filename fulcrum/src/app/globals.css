@@ -9,6 +9,7 @@
 * {
     font-family: 'Montserrat';
     color: var(--dark);
+    transition: all .2;
 }
 
 body{

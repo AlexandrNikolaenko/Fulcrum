@@ -1,7 +1,8 @@
 'use client'
 
 import { BaseButton } from "@/app/components/buttons";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { API_HOST } from "@/app/components/host";
 
 const defaultFilters = {
     university: {
@@ -56,6 +57,18 @@ export default function Filters({isShow, action}) {
     let [filters, setFilters] = useState(defaultFilters);
     let [amount, setAmount] = useState(0);
     let message = useRef(`Показать ${amount} объявлений`);
+
+    useEffect(() => {
+        async function getAmount()  {
+            console.log(`${API_HOST}/helps/amount?${filters.university.name}=${filters.university.value}&${filters.part.name}=${filters.part.value}&${filters.tags.name}=${filters.tags.value.join('_')}`);
+            let res = await fetch(`${API_HOST}/helps/amount?${filters.university.name}=${filters.university.value}&${filters.part.name}=${filters.part.value}&${filters.tags.name}=${filters.tags.value.join('_')}`, {method: 'GET'});
+            if (res.status == 200) {
+                let data = (await res.json()).amount;
+                if (amount != data) setAmount(data);
+            }
+        }     
+        getAmount();  
+    });
     
     if (amount == 1 || (amount > 20 && amount % 10 == 1)) message.current = `Показать 1 объявление`;
     else if ((amount > 1 && amount < 5) || (amount > 20 && amount % 10 > 1 && amount % 10 < 5)) message.current = `Показать ${amount} объявления`;
@@ -73,12 +86,22 @@ export default function Filters({isShow, action}) {
         setFilters(newfilter);
     }
 
+    function setTags({tag, checked}) {
+        let newfilter = {};
+        Object.assign(newfilter, filters);
+        if (checked) {
+            newfilter.tags.value = newfilter.tags.value.filter(id => id != tag);
+        }
+        else newfilter.tags.value.push(tag);
+        setFilters(newfilter);
+    }
+
     return (
         <div className={`${isShow ? 'flex' : 'hidden'} gap-[15px] p-[25px] rounded-large bg-white shadow-center flex-wrap items-start`}>
             <UnivFilter filter={filters.university} change={change}/>
             <PartFilter filter={filters.part} change={change}/>
-            <TimeFilter filter={filters.time}/>
-            <TagsFilter filter={filters.tags}/>
+            <TimeFilter filter={filters.time} />
+            <TagsFilter filter={filters.tags} action={setTags}/>
             <BaseButton text={message.current} action={show}/>
         </div>
     )
@@ -125,23 +148,26 @@ function PartFilter({filter}) {
 
 function TimeFilter({filter}) {
     return(
-        <>
-        </>
-    )
-}
-
-function TagsFilter({filter}) {
-    return(
-        <form>
+        <form id={'timeform'} className="flex flex-col gap-2.5">
             <FilterName>{filter.title}</FilterName>
-            <div className="flex flex-wrap gap-2.5"></div>
         </form>
     )
 }
 
-function Tag(tag) {
-
+function TagsFilter({filter, action}) {
+    return(
+        <form id='tagsform' className="flex flex-col gap-2.5">
+            <FilterName>{filter.title}</FilterName>
+            <div className="flex flex-wrap gap-2.5">
+                {filter.tags.map((tag => <button key={tag.id} onClick={(e) => {
+                    e.preventDefault();
+                    action({tag: tag.id, checked: Boolean(filter.value.includes(tag.id))})
+                }} className={`${Boolean(filter.value.includes(tag.id)) ? 'bg-light-gray shadow-inner' : 'bg-white shadow-center'} rounded-[5px] py-[5px] px-2.5 active:bg-light-gray active:shadow-inner`}>{tag.name}</button>))}
+            </div>
+        </form>
+    )
 }
+
 
 function FilterName({children}) {
     return <p className="text-dark text-base">{children}</p>

@@ -310,7 +310,7 @@ app.get('/ads/amount', function(req, res) {
         if (req.query.course) filter.push({name: 'course', val: req.query.course});
         let stroke = 'where ';
         filter.forEach((elem) => {
-            stroke.concat(`${elem.name} = '${elem.val}' and `)
+            stroke = stroke.concat(`${elem.name} = '${elem.val}' and `)
         });
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
@@ -418,6 +418,42 @@ app.post('/ads/like', function(req, res) {
         res.status(500);
         res.send();
     }
-})
+});
+
+app.get('/helps/amount', function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+    });
+
+    try {
+        let filter = [];
+        if (req.query.university) filter.push({name: 'university', val: req.query.university});
+        if (req.query.part) filter.push({name: 'part', val: req.query.part});
+        if (req.query.tags) filter.push({name: 'tags', val: req.query.tags.split('_')});
+        let stroke = 'where ';
+        filter.forEach((elem) => {
+            if (elem.name != 'tags') stroke = stroke.concat(`${elem.name} = '${elem.val}' and `);
+            else elem.val.forEach(tag => stroke = stroke.concat(`tags like '%${tag}%' and `));
+        });
+        if (stroke == 'where ') stroke = '';
+        else stroke = stroke.slice(0, stroke.length - 5);
+
+        const connection = new Connetion((e) => {
+            if (e) throw new Error(e);
+        });
+
+        connection.query(`select count(*) as amount from Helps ${stroke}`, function(e, result) {
+            if (e) throw new Error(e);
+            res.status(200);
+            res.send({amount: result[0].amount});
+        });
+
+    } catch(e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
 
 app.listen(5000);

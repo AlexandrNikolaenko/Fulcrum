@@ -67,6 +67,12 @@ const Helps = sequelize.define(
         user_id: {
             type: DataTypes.INTEGER
         },
+        university: {
+            type: DataTypes.STRING
+        },
+        part: {
+            type: DataTypes.STRING
+        },
         status: {
             type: DataTypes.STRING
         },
@@ -170,10 +176,10 @@ const Users = sequelize.define(
     }
 );
 
-// Users.sync({alter: true});
+Users.sync({alter: true});
 
-// Ads.sync({alter: true});
+Ads.sync({alter: true});
 
-// Helps.sync({alter: true});
+Helps.sync({alter: true});
 
-// Feedbacks.sync({alter: true});
+Feedbacks.sync({alter: true});
