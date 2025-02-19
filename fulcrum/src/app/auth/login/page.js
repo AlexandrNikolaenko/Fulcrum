@@ -1,6 +1,6 @@
 'use client'
 
-import { BaseButton, SubmitButton } from "@/app/components/buttons"
+import { SubmitButton } from "@/app/components/buttons"
 import {LableInput, InputAuthField} from "../components/inputs"
 import OrLine from "../components/or"
 import Link from "next/link";

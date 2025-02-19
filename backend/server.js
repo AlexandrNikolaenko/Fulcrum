@@ -80,8 +80,8 @@ app.use((req, res, next) => {
                         id: newId   
                     }));
 
-                    res.cookie('access', `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`);
-                    res.cookie('refresh', `${newRefresh}`, {httpOnly: true});
+                    res.cookie('access', `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`, {maxAge: accesAge});
+                    res.cookie('refresh', `${newRefresh}`, {httpOnly: true, maxAge: refreshAge});
                     req.user = refresh.id.split('.')[1];
                 }
             }
@@ -98,7 +98,6 @@ function getTokens(res, {userId, email}) {
     if (userId) newId = `${Date.now()}.${userId}`;
     else {
         try {
-            console.log('here');
             const connection = new Connetion((err) => {
                 if (err) throw new Error(err);
             });
@@ -156,9 +155,8 @@ app.get('/auth/login', function(req, res) {
             else if (result[0].password == crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')) {
                 res.status(200);
                 let {access, refresh} = getTokens(res, {userId: result[0].id});
-                res.cookie('access', access);
-                res.cookie('refresh', refresh, {httpOnly: true});
-                console.log(res.getHeaders()['set-cookie']);
+                res.cookie('access', access, {maxAge: accesAge});
+                res.cookie('refresh', refresh, {httpOnly: true, maxAge: refreshAge});
                 res.send();
             }
             else {
@@ -279,7 +277,6 @@ app.get('/getuser', function(req, res) {
                         id: req.user,
                         name: result[0].username
                     }
-                    console.log(data);
                     res.send(data);
                 } else {
                     res.status(401);

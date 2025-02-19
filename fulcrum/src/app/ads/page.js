@@ -6,7 +6,9 @@ import AdsList from "./components/list"
 import { useState } from "react";
 
 export default function Page() {
-    let [showResults, setShowResults] = useState({university: defaultFilters[0].value, subject: defaultFilters[1].value, course: defaultFilters[2].value})
+    let [showResults, setShowResults] = useState({university: defaultFilters[0].value, subject: defaultFilters[1].value, course: defaultFilters[2].value});
+    let [ads, setAds] = useState([]);
+    let [sort, setSort] = useState();
 
     function show(filters) {
         console.log(filters);
@@ -16,10 +18,10 @@ export default function Page() {
 
     return(
         <div className="flex flex-col items-center gap-7 pt-[110px] wrapper">
-            <Search />
+            <Search setAds={setAds} setSort={setSort}/>
             <div className="flex gap-16 items-start w-full">
                 <Filter action={show}/>
-                <AdsList filters={showResults}/>
+                <AdsList filters={showResults} searchData={ads} sort={sort}/>
             </div>
         </div>
     )

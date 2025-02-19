@@ -21,9 +21,9 @@ let plugs = [
     },
 ]
 
-export default function AdsList({filters}) {
+export default function AdsList({filters, sort, searchData}) {
     let [isLoad, setIsLoad] = useState(false);
-    let [ads, setAds] = useState([]);
+    let [ads, setAds] = useState(searchData);
     let lastFilters = useRef({});
 
     useEffect(() => {
