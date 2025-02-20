@@ -36,8 +36,12 @@ function Help({help}) {
         if (res.status == 200) setIsHide(!isHide)
     }
 
+    if (isHide) {
+        return <></>
+    }
+
     return(
-        <li className={`${isHide ? 'hidden' : 'flex'} flex-col gap-2.5 rounded-large p-[15px] bg-white shadow-center`}>
+        <li className={`flex flex-col gap-2.5 rounded-large p-[15px] bg-white shadow-center`}>
             {help.image_link && <Image alt={'image'} src={help.image_link} fill={true}/>}
             <h2 className="text-dark text-2xl font-bold">{help.title}</h2>
             <p className="text-base text-dark">{help.university}, {help.course}</p>

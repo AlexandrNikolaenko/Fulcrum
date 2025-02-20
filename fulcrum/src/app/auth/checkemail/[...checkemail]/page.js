@@ -15,6 +15,7 @@ export default async function Check({params}) {
     });
     if (res.status == 200) redirect(`${APP_HOST}/`, 'replace');
     else {
+        console.log(res.status);
         return (
             <div className="flex items-center justify-center h-screen w-full">
                 <p className="text-lg text-dark">Что-то пошло не так:(</p>

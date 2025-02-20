@@ -8,6 +8,7 @@ const mysql = require('mysql2');
 const crypto = require('crypto');
 const base64url = require('base64url');
 const nodemailer = require("nodemailer");
+const { resolve } = require('path');
 
 const app = express();
 
@@ -749,5 +750,35 @@ app.post('/helps/hide', async function(req, res) {
         res.send();
     }
 });
+
+app.get('/getad', async function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000"
+    });
+
+    try {
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e))
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Ads where id = ${req.query.id}`, function(e, result) {
+            if (e) res.status(500).send();
+            else {
+                hides.push(JSON.parse(result[0].help_hide));
+                if (req.query.hide) hides.push(req.query.id);
+                else hides = hides.filter((hideId) => hideId != req.query.id);
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+})
 
 app.listen(5000);

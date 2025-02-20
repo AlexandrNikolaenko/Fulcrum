@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Plug from "@/app/components/plug";
 import Image from "next/image";
-import { BaseButton } from "@/app/components/buttons";
-import { API_HOST } from "@/app/components/host";
+import { BaseLink } from "@/app/components/buttons";
+import { API_HOST, APP_HOST } from "@/app/components/host";
+import { LikeAd, HideAd } from "./likeAndHide";
 
 let plugs = [
     {
@@ -54,12 +55,12 @@ export default function AdsList({filters, sort, searchData}) {
 }
 
 function Ad({ad}) {
-    let [isShow, setIsShow] = useState(ad.isShow);
+    let [isHide, setIsHide] = useState(ad.isHide);
 
-    if (!isShow) return <></>
+    if (isHide) return <></>
 
     return (
-        <li className={`flex gap-5 p-5 rounded-large shadow-center bg-white items-start`}>
+        <li className={`flex gap-5 p-5 rounded-large shadow-center bg-white items-start w-full`}>
             {ad && ad.imageLink ? <Image src={ad.imageLink} width={256} height={176} alt="Ad's image"/> : <Plug className={'w-[256px] h-[176px] bg-gray rounded-base'}/>}
             <div className="w-full flex flex-col gap-y-2.5">
                 <div className="w-full flex justify-between gap-2.5">
@@ -70,36 +71,13 @@ function Ad({ad}) {
                 <p>Количество воспользовавшихся услугой: {ad.count}</p>
                 <p>{ad.body}</p>
                 <div className="flex gap-2.5">
-                    <BaseButton text={'Написать'} />
-                    <Like like={ad.isLike} id={ad.id}/>
-                    <button onClick={() => setIsShow(!isShow)} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button>
+                    <BaseLink text={'Написать'} href={`${APP_HOST}/ads/adcard/${ad.id}`}/>
+                    <LikeAd like={ad.isLike} id={ad.id}/>
+                    <HideAd isHide={isHide} setIsHide={setIsHide}/>
+                    {/* <button onClick={hide} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button> */}
                 </div>
             </div>
         </li>
     )
 }
 
-function Like({like, id}) {
-    let [isLike, setIsLike] = useState(like);
-    let src
-    if (isLike) src = '/Like.svg';
-    else src = '/notLike.svg';
-
-    async function setLike() {
-        let res = await fetch(`${API_HOST}/ads/like`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "http://localhost:3000",
-            },
-            credentials: 'include',
-            body: JSON.stringify({id: id, like: !like})
-        });
-        if (res.status == 200) setIsLike(!setIsLike);
-        else if (res.status == 401) alert('Чтобы отметить объявление войдите в систему или зарегистрируйтесь');
-    }
-
-    return <button onClick={() => {
-        setLike();
-    }} className="w-fit h-fit"><Image alt="like" src={src} width={24} height={24}></Image></button>
-}
