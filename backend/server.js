@@ -768,9 +768,33 @@ app.get('/getad', async function(req, res) {
         connection.query(`select * from Ads where id = ${req.query.id}`, function(e, result) {
             if (e) res.status(500).send();
             else {
-                hides.push(JSON.parse(result[0].help_hide));
-                if (req.query.hide) hides.push(req.query.id);
-                else hides = hides.filter((hideId) => hideId != req.query.id);
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+});
+
+app.get('/gethelp', async function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000"
+    });
+
+    try {
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e))
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Helps where id = ${req.query.id}`, function(e, result) {
+            if (e) res.status(500).send();
+            else {
             }
         });
 
