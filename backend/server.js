@@ -16,15 +16,22 @@ const host = 'localhost';
 const refreshAge = 4320000*1000;
 const accesAge = 60000*1000;
 
-class Connetion {
+class Connection {
     constructor(connectCallback) {
-        this.connection = mysql.createConnection({
-            host: host,
-            user: config.database.user,
-            password: config.database.password,
-            database: config.database.database
-        });
-        this.connection.connect(err => connectCallback(err));
+        try {
+            this.connection = mysql.createConnection({
+                host: host,
+                user: config.database.user,
+                password: config.database.password,
+                database: config.database.database
+            });
+            this.connection.connect(err => {
+                try {
+                    if (err) throw new Error(err);
+                    connectCallback(err);
+                } catch(e) {console.log(e)}
+            });
+        } catch(e) {console.log(e)}
     }
 
     query(query, callback) {
@@ -79,11 +86,33 @@ app.use((req, res, next) => {
                         exp: Number(newId.split('.')[0]) + refreshAge,
                         id: newId   
                     }));
-
                     res.cookie('access', `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`, {maxAge: accesAge});
                     res.cookie('refresh', `${newRefresh}`, {httpOnly: true, maxAge: refreshAge});
                     req.user = refresh.id.split('.')[1];
                 }
+            }
+        } else if (req.cookies.refresh) {
+
+            let refresh = JSON.parse(Buffer.from(req.cookies.refresh, 'base64').toString('utf8'));
+
+            if (refresh.exp > Date.now()) {
+                let newId = `${Date.now()}.${refresh.id.split('.')[1]}`;
+                let newAccess = [base64url(JSON.stringify({
+                    alg: 'SHA256',
+                    typ: "JWT",
+                    ctp: "JWT"
+                })), base64url(JSON.stringify({
+                    iss: 'fulcrum',
+                    exp: Number(newId.split('.')[0]) + accesAge,
+                    id: newId   
+                }))];
+                let newRefresh = base64url(JSON.stringify({
+                    exp: Number(newId.split('.')[0]) + refreshAge,
+                    id: newId   
+                }));
+                res.cookie('access', `${newAccess[0]}.${newAccess[1]}.${crypto.createHmac('SHA256', config.jwt.key).update(`${newAccess[0]}.${newAccess[1]}`).digest('base64')}`, {maxAge: accesAge});
+                res.cookie('refresh', `${newRefresh}`, {httpOnly: true, maxAge: refreshAge});
+                req.user = refresh.id.split('.')[1];
             }
         }
     } catch(e) {console.log(e);}
@@ -93,13 +122,16 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(bodyParser.json());
 
-function getTokens(res, {userId, email}) {
+async function getTokens(res, {userId, email}) {
     let newId
     if (userId) newId = `${Date.now()}.${userId}`;
     else {
         try {
-            const connection = new Connetion((err) => {
-                if (err) throw new Error(err);
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
             });
             
             connection.query(`select id from Users where email = '${email}'`, function(e, result) {
@@ -134,7 +166,7 @@ function getTokens(res, {userId, email}) {
     }
 }
 
-app.get('/auth/login', function(req, res) {
+app.get('/auth/login', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -142,19 +174,22 @@ app.get('/auth/login', function(req, res) {
     });
 
     try {
-        const connection = new Connetion((err) => {
-            if (err) console.log(err);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
 
-        connection.query(`select id, password from Users where email = '${req.query.email}'`, function(e, result) {
-            if (e) throw new Error(e);
+        connection.query(`select id, password from Users where email = '${req.query.email}'`, async function(e, result) {
+            if (e) res.status(500).send();
             if (result.length == 0) {
                 res.status(401);
                 res.send();
             }
             else if (result[0].password == crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')) {
                 res.status(200);
-                let {access, refresh} = getTokens(res, {userId: result[0].id});
+                let {access, refresh} = await getTokens(res, {userId: result[0].id});
                 res.cookie('access', access, {maxAge: accesAge});
                 res.cookie('refresh', refresh, {httpOnly: true, maxAge: refreshAge});
                 res.send();
@@ -175,7 +210,7 @@ app.get('/auth/login', function(req, res) {
     
 });
 
-app.get('/auth/signup', function(req, res) {
+app.get('/auth/signup', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -184,31 +219,36 @@ app.get('/auth/signup', function(req, res) {
     let returnData = {}
 
     try {
-        const connection = new Connetion((err) => {
-            if (err) throw new Error(err);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
     
         connection.query(`select * from Users where email = '${req.query.email}'`, function(e, result) {
-            if (e) throw new Error(e);
-            if (result.length == 0) {
-                res.status(200);
-                let link = `http://${host}:3000/auth/checkemail/${base64url(JSON.stringify({
+            if (e) res.status(500).send();
+            else {
+                if (result.length == 0) {
+                    res.status(200);
+                    let link = `http://${host}:3000/auth/checkemail/${base64url(JSON.stringify({
+                            email: req.query.email,
+                            password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
+                        }))}`
+                    transporter.sendMail({
+                        from: '<alexnikol092004@gmail.com>',
+                        to: `${req.query.email}`,
+                        subject: "Подтверждение почты",
+                        text: `Для подтверждения адреса электронной почты перейдите по ссылке: ${link}`
+                    });
+                    
+                    returnData = {link: base64url(JSON.stringify({
                         email: req.query.email,
                         password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
-                    }))}`
-                transporter.sendMail({
-                    from: '<alexnikol092004@gmail.com>',
-                    to: `${req.query.email}`,
-                    subject: "Подтверждение почты",
-                    text: `Для подтверждения адреса электронной почты перейдите по ссылке: ${link}`
-                });
-                
-                returnData = {link: base64url(JSON.stringify({
-                    email: req.query.email,
-                    password: crypto.createHmac('SHA256', config.jwt.key).update(req.query.password).digest('base64')
-                }))}
+                    }))}
+                }
+                else res.status(401);
             }
-            else res.status(401);
         });
     
         connection.end();
@@ -220,7 +260,7 @@ app.get('/auth/signup', function(req, res) {
     res.send(returnData);
 });
 
-app.post('/auth/adduser', function(req, res) {
+app.post('/auth/adduser', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -228,21 +268,26 @@ app.post('/auth/adduser', function(req, res) {
     });
 
     try {
-        const connection = new Connetion((err) => {
-            if (err) throw new Error(err);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
 
         let {email, password} = JSON.parse(Buffer.from(req.body.link, 'base64').toString('utf8'));
     
-        connection.query(`insert into Users (email, password) values ('${email}', '${password}')`, function(e, result) {
-            if (e) throw new Error(e);
-            if (result.length == 0) {
-                res.status(200);
-                let {access, refresh} = getTokens(res, {email: email});
-                res.cookie('access', access, {maxAge: accesAge});
-                res.cookie('refresh', refresh, {httpOnly: true, maxAge: refreshAge});
+        connection.query(`insert into Users (email, password) values ('${email}', '${password}')`, async function(e, result) {
+            if (e) res.status(500).send();
+            else {
+                if (result.length == 0) {
+                    res.status(200);
+                    let {access, refresh} = await getTokens(res, {email: email});
+                    res.cookie('access', access, {maxAge: accesAge});
+                    res.cookie('refresh', refresh, {httpOnly: true, maxAge: refreshAge});
+                }
+                else res.status(401);
             }
-            else res.status(401);
         });
     
         connection.end();
@@ -254,7 +299,7 @@ app.post('/auth/adduser', function(req, res) {
     res.send();
 });
 
-app.get('/getuser', function(req, res) {
+app.get('/getuser', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -265,22 +310,27 @@ app.get('/getuser', function(req, res) {
     
     try {
         if (typeof req.user != 'undefined') {
-            const connection = new Connetion((e) => {
-                if (e) throw new Error(e);
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
             });
     
             connection.query(`select username from Users where id = ${req.user}`, function(err, result) {
-                if (err) throw new Error(err);
-                if (result.length != 0) {
-                    res.status(200);
-                    data = {
-                        id: req.user,
-                        name: result[0].username
+                if (err) res.status(500).send();
+                else {
+                    if (result.length != 0) {
+                        res.status(200);
+                        data = {
+                            id: req.user,
+                            name: result[0].username
+                        }
+                        res.send(data);
+                    } else {
+                        res.status(401);
+                        res.send(data);
                     }
-                    res.send(data);
-                } else {
-                    res.status(401);
-                    res.send(data);
                 }
             });
 
@@ -297,7 +347,7 @@ app.get('/getuser', function(req, res) {
     }
 });
 
-app.get('/ads/amount', function(req, res) {
+app.get('/ads/amount', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -315,12 +365,15 @@ app.get('/ads/amount', function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = new Connetion((err) => {
-            if (err) throw new Error(err);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
 
         connection.query(`select count(*) as amount from Ads ${stroke}`, function (e, result) {
-            if (e) throw new Error(e);
+            if (e) res.status(500).send();
             else {
                 res.status(200);
                 res.send({amount: result[0].amount});
@@ -335,7 +388,7 @@ app.get('/ads/amount', function(req, res) {
     }
 });
 
-app.get('/ads', function(req, res) {
+app.get('/ads', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -353,12 +406,15 @@ app.get('/ads', function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = new Connetion((err) => {
-            if (err) throw new Error(err);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
 
         connection.query(`select * from Ads ${stroke}`, function (e, result) {
-            if (e) throw new Error(e);
+            if (e) res.status(500).send();
             else {
                 res.status(200);
                 res.send({ads: result});
@@ -373,7 +429,7 @@ app.get('/ads', function(req, res) {
     }
 });
 
-app.post('/ads/like', function(req, res) {
+app.post('/ads/like', async function(req, res) {
     req.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -382,32 +438,44 @@ app.post('/ads/like', function(req, res) {
 
     try {
         if (req.user) {
-            const connection = new Connetion((err) => {
-                if (err) throw new Error(err);
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
             });
 
             let likes = [];
     
             connection.query(`select ad_like from Users where user_id = ${req.user}`, function(e, result) {
-                if (e) throw new Error(e);
-                likes.push(JSON.parse(result[0].ad_like));
-                if (req.query.like) likes.push(req.query.id);
-                else likes = likes.filter((likeId) => likeId != req.query.id);
+                if (e) res.status(500).send();
+                else {
+                    likes.push(JSON.parse(result[0].ad_like));
+                    if (req.query.like) likes.push(req.query.id);
+                    else likes = likes.filter((likeId) => likeId != req.query.id);
+                }
             });
     
-            connection.end((err) => {
-                if (err) throw new Error(err);
-                const con = new Connetion((error) => {
-                    if (error) throw new Error(error);
-                });
-
-                con.query(`insert Users set ad_like = ${JSON.stringify(likes)} where id = ${req.user}`, function(e, _) {
-                    if (e) throw new Error(e);
-                    res.status(200);
-                    res.send();
-                });
-
-                con.end();
+            connection.end(async (err) => {
+                if (err) res.status(500).send();
+                else {
+                    const con = await new Promise((resolve, reject) => {
+                        const conn = new Connection((e) => {
+                            if (e) reject(new Error(e));
+                            else resolve(conn);
+                        });
+                    });
+    
+                    con.query(`update Users set ad_like = ${JSON.stringify(likes)} where id = ${req.user}`, function(e, _) {
+                        if (e) res.status(500).send();
+                        else {
+                            res.status(200);
+                            res.send();
+                        }
+                    });
+    
+                    con.end();
+                }
             });
         } else {
             res.status(401);
@@ -420,7 +488,66 @@ app.post('/ads/like', function(req, res) {
     }
 });
 
-app.get('/helps/amount', function(req, res) {
+app.post('/ads/hide', async function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        if (req.user) {
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
+            });
+
+            let hides = [];
+    
+            connection.query(`select ad_hide from Users where user_id = ${req.user}`, function(e, result) {
+                if (e) res.status(500).send();
+                else {
+                    hides.push(JSON.parse(result[0].ad_hide));
+                    if (req.query.hide) hides.push(req.query.id);
+                    else hides = hides.filter((hideId) => hideId != req.query.id);
+                }
+            });
+    
+            connection.end(async (err) => {
+                if (err) res.status(500).send();
+                else {
+                    const con = await new Promise((resolve, reject) => {
+                        const conn = new Connection((e) => {
+                            if (e) reject(new Error(e));
+                            else resolve(conn);
+                        });
+                    });
+    
+                    con.query(`update Users set ad_hide = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
+                        if (e) res.status(500).send();
+                        else {
+                            res.status(200);
+                            res.send();
+                        }
+                    });
+    
+                    con.end();
+                }
+            });
+        } else {
+            res.status(401);
+            res.send();
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.get('/helps/amount', async function(req, res) {
     res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
@@ -439,17 +566,184 @@ app.get('/helps/amount', function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = new Connetion((e) => {
-            if (e) throw new Error(e);
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
         });
 
         connection.query(`select count(*) as amount from Helps ${stroke}`, function(e, result) {
-            if (e) throw new Error(e);
-            res.status(200);
-            res.send({amount: result[0].amount});
+            if (e) res.status(500).send();
+            else {
+                res.status(200);
+                res.send({amount: result[0].amount});
+            }
         });
 
+        connection.end();
+
     } catch(e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.get('/helps', async function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+    });
+
+    try {
+        let filter = [];
+        if (req.query.university) filter.push({name: 'university', val: req.query.university});
+        if (req.query.part) filter.push({name: 'part', val: req.query.part});
+        if (req.query.tags) filter.push({name: 'tags', val: req.query.tags.split('_')});
+        let stroke = 'where ';
+        filter.forEach((elem) => {
+            if (elem.name != 'tags') stroke = stroke.concat(`${elem.name} = '${elem.val}' and `);
+            else elem.val.forEach(tag => stroke = stroke.concat(`tags like '%${tag}%' and `));
+        });
+        if (stroke == 'where ') stroke = '';
+        else stroke = stroke.slice(0, stroke.length - 5);
+
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Helps ${stroke}`, function (e, result) {
+            if (e) res.status(500).send();
+            else {
+                res.status(200);
+                res.send({ads: result});
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.post('/helps/like', async function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        if (req.user) {
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
+            });
+
+            let hides = [];
+    
+            connection.query(`select help_like from Users where user_id = ${req.user}`, function(e, result) {
+                if (e) res.status(500).send();
+                else {
+                    hides.push(JSON.parse(result[0].help_hide));
+                    if (req.query.hide) hides.push(req.query.id);
+                    else hides = hides.filter((hideId) => hideId != req.query.id);
+                }
+            });
+    
+            connection.end(async (err) => {
+                if (err) res.status(500).send();
+                else {
+                    const con = await new Promise((resolve, reject) => {
+                        const conn = new Connection((e) => {
+                            if (e) reject(new Error(e));
+                            else resolve(conn);
+                        });
+                    });
+    
+                    con.query(`update Users set help_like = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
+                        if (e) res.status(500).send();
+                        else {
+                            res.status(200);
+                            res.send();
+                        }
+                    });
+    
+                    con.end();
+                }
+            });
+        } else {
+            res.status(401);
+            res.send();
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500);
+        res.send();
+    }
+});
+
+app.post('/helps/hide', async function(req, res) {
+    req.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        if (req.user) {
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((e) => {
+                    if (e) reject(new Error(e));
+                    else resolve(conn);
+                });
+            });
+
+            let hides = [];
+    
+            connection.query(`select help_hide from Users where user_id = ${req.user}`, function(e, result) {
+                if (e) res.status(500).send();
+                else {
+                    hides.push(JSON.parse(result[0].help_hide));
+                    if (req.query.hide) hides.push(req.query.id);
+                    else hides = hides.filter((hideId) => hideId != req.query.id);
+                }
+            });
+    
+            connection.end(async (err) => {
+                if (err) res.status(500).send();
+                else {
+                    const con = await new Promise((resolve, reject) => {
+                        const conn = new Connection((e) => {
+                            if (e) reject(new Error(e));
+                            else resolve(conn);
+                        });
+                    });
+    
+                    con.query(`update Users set help_hide = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
+                        if (e) res.status(500).send();
+                        else {
+                            res.status(200);
+                            res.send();
+                        }
+                    });
+    
+                    con.end();
+                }
+            });
+        } else {
+            res.status(401);
+            res.send();
+        }
+    } catch (e) {
         console.log(e);
         res.status(500);
         res.send();

@@ -72,7 +72,7 @@ function Ad({ad}) {
                 <div className="flex gap-2.5">
                     <BaseButton text={'Написать'} />
                     <Like like={ad.isLike} id={ad.id}/>
-                    <button onClick={setIsShow(false)} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button>
+                    <button onClick={() => setIsShow(!isShow)} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button>
                 </div>
             </div>
         </li>

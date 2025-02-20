@@ -75,7 +75,8 @@ export default function Filters({isShow, action}) {
     else message.current = `Показать ${amount} объявлений`;
 
     function show() {
-        action();
+        let stroke = `${filters.university.name}=${filters.university.value}&${filters.part.name}=${filters.part.value}&${filters.tags.name}=${filters.tags.value.join('_')}`
+        action(stroke);
     }
 
     function change({variant, checked, filter}) {
