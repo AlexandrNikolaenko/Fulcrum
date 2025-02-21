@@ -7,7 +7,9 @@ import { useState } from "react";
 
 
 export default function AuthorCard({author}) {
-    let [isExpand, setIsExpend] = useState(false)
+    let [isExpand, setIsExpend] = useState(false);
+
+    if (!author.avatar) author.avatar = '/Edit.svg'
 
     return (
         <div className="flex flex-col shadow-center ">

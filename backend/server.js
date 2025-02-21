@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const base64url = require('base64url');
 const nodemailer = require("nodemailer");
 const { resolve } = require('path');
+const { title } = require('process');
 
 const app = express();
 
@@ -402,7 +403,7 @@ app.get('/ads', async function(req, res) {
         if (req.query.course) filter.push({name: 'course', val: req.query.course});
         let stroke = 'where ';
         filter.forEach((elem) => {
-            stroke.concat(`${elem.name} = '${elem.val}' and `)
+            stroke.concat(`Ads.${elem.name} = '${elem.val}' and `)
         });
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
@@ -414,7 +415,7 @@ app.get('/ads', async function(req, res) {
             });
         });
 
-        connection.query(`select * from Ads ${stroke}`, function (e, result) {
+        connection.query(`select * from Ads join Users on Users.id = Ads.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
                 res.status(200);
@@ -431,7 +432,7 @@ app.get('/ads', async function(req, res) {
 });
 
 app.post('/ads/like', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
         'Access-Control-Allow-Credentials': 'true'
@@ -490,7 +491,7 @@ app.post('/ads/like', async function(req, res) {
 });
 
 app.post('/ads/hide', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
         'Access-Control-Allow-Credentials': 'true'
@@ -604,8 +605,8 @@ app.get('/helps', async function(req, res) {
         if (req.query.tags) filter.push({name: 'tags', val: req.query.tags.split('_')});
         let stroke = 'where ';
         filter.forEach((elem) => {
-            if (elem.name != 'tags') stroke = stroke.concat(`${elem.name} = '${elem.val}' and `);
-            else elem.val.forEach(tag => stroke = stroke.concat(`tags like '%${tag}%' and `));
+            if (elem.name != 'tags') stroke = stroke.concat(`Helps.${elem.name} = '${elem.val}' and `);
+            else elem.val.forEach(tag => stroke = stroke.concat(`Helps.tags like '%${tag}%' and `));
         });
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
@@ -617,7 +618,7 @@ app.get('/helps', async function(req, res) {
             });
         });
 
-        connection.query(`select * from Helps ${stroke}`, function (e, result) {
+        connection.query(`select * from Helps join Users on Users.id = Helps.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
                 res.status(200);
@@ -634,7 +635,7 @@ app.get('/helps', async function(req, res) {
 });
 
 app.post('/helps/like', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
         'Access-Control-Allow-Credentials': 'true'
@@ -693,7 +694,7 @@ app.post('/helps/like', async function(req, res) {
 });
 
 app.post('/helps/hide', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000",
         'Access-Control-Allow-Credentials': 'true'
@@ -752,7 +753,7 @@ app.post('/helps/hide', async function(req, res) {
 });
 
 app.get('/getad', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000"
     });
@@ -765,9 +766,74 @@ app.get('/getad', async function(req, res) {
             });
         });
 
-        connection.query(`select * from Ads where id = ${req.query.id}`, function(e, result) {
-            if (e) res.status(500).send();
+        let data = {};
+
+        connection.query(`select * from Ads where id = ${req.query.id}`, async function(e, result) {
+            if (e || !result[0]) res.status(500).send();
             else {
+                data.base = {
+                    id: result[0].id,
+                    title: result[0].title,
+                    price: result[0].price,
+                    image_link: result[0].image_link,
+                    desc: result[0].body
+                };
+
+                const conUser = await new Promise(function (resolve, reject) {
+                    const conn = new Connection((e) => {
+                        if (e) reject(new Error(e))
+                        else resolve(conn);
+                    });
+                });
+
+                conUser.query(`select * from Users where ${result[0].user_id}`, function(err, userResult) {
+                    if (err || !result[0]) res.status(500).send();
+                    else {
+                        if (userResult[0].ad_like) data.base.like = Boolean(Array.from(JSON.parse(userResult[0].ad_like)).includes(req.query.id));
+                        else data.base.like = false;
+                        if (userResult[0].ad_hide) data.base.hide = Boolean(Array.from(JSON.parse(userResult[0].ad_hide)).includes(req.query.id));
+                        else data.base.hide = false;
+                        data.author = {
+                            id: userResult[0].id,
+                            avatar: userResult[0].avatar,
+                            name: userResult[0].username,
+                            university: userResult[0].university,
+                            course: userResult[0].course,
+                            about: userResult[0].about
+                        };
+                    }
+                });
+
+                conUser.end();
+
+                const conSame = await new Promise(function (resolve, reject) {
+                    const conn = new Connection((e) => {
+                        if (e) reject(new Error(e));
+                        else resolve(conn);
+                    });
+                });
+
+                conSame.query(`select * from Ads join Users on Ads.user_id = Users.id where Ads.subject = '${result[0].subject}' and Ads.id != ${req.query.id} limit 3`, function(err, sameResult) {
+                    if (err) res.status(500).send();
+                    else {
+                        data.same = [];
+                        sameResult.forEach(same => {
+                            data.same.push({
+                                id: same.id,
+                                title: same.title,
+                                body: same.body,
+                                price: same.price,
+                                count: same.count,
+                                university: same.university,
+                                course: same.course,
+                                image_link: same.image_link
+                            })
+                        });
+                        res.status(200).send(data);
+                    }
+                });
+
+                conSame.end();
             }
         });
 
@@ -794,7 +860,8 @@ app.get('/gethelp', async function(req, res) {
 
         connection.query(`select * from Helps where id = ${req.query.id}`, function(e, result) {
             if (e) res.status(500).send();
-            else {
+            else if (result[0]) {
+
             }
         });
 

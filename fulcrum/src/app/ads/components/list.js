@@ -67,7 +67,7 @@ function Ad({ad}) {
                     <p>{ad.title}</p>
                     <p>{ad.price}</p>
                 </div>
-                <p>{ad.user.univeersity}, {ad.user.course}</p>
+                <p>{ad.university}, {ad.course}</p>
                 <p>Количество воспользовавшихся услугой: {ad.count}</p>
                 <p>{ad.body}</p>
                 <div className="flex gap-2.5">
