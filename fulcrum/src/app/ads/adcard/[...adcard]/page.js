@@ -35,7 +35,9 @@ function BaseInfo({data}) {
                     <span className="font-title text-3xl text-dark font-bold">{data.price}</span>
                     <AdButtons data={data}/>
                 </div>
-                <Image alt={"ad's imgae"} src={data.image_link} width={253} height={190}/>
+                <div className="w-fit h-fit p-2.5 rounded-medium shadow-center bg-white">
+                    <Image alt={"ad's imgae"} src={data.image_link} width={253} height={190}/>
+                </div>
             </div>
             <p className="text-dark font-title text-3xl">Описание</p>
             <p className="text-dark text-base">{data.desc}</p>

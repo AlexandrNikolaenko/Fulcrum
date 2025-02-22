@@ -176,19 +176,44 @@ const Users = sequelize.define(
     }
 );
 
-// Users.sync({alter: true});
+const Subjects = sequelize.define(
+    'Subjects',
+    {
+        id: {
+            type: DataTypes.INTEGER,
+            unique: true,
+            primaryKey: true
+        },
+        name: {
+            type: DataTypes.STRING,
+        }
+    },
+    {
+        freezeTableName: true,
+        timestamps: false
+    }
+)
 
-Ads.sync({alter: true});
+Users.sync({alter: true});
 
-Ads.create({
-    title: 'Подготовка к экзамену по физике',
-    body: "Lorem ipsum dolor sit amet consectetur. Vitae iaculis metus nulla tellus sem arcu nulla dui. Lectus nec ullamcorper a risus fusce ultrices egestas quis nunc. Euismod nunc purus nunc laoreet sem. In vitae neque ac id facilisis facilisis urna ullamcorper. Mauris sit faucibus dignissim placerat. Ornare accumsan senectus congue praesent ut lacus tempus purus vitae. Adipiscing nisi pellentesque nec interdum lorem quis ut lectus in. Et felis non orci vulputate id ultricies.\nSed nulla quis semper cursus tortor pharetra mauris hendrerit sodales. Dui purus id consectetur massa bibendum duis diam eu. At varius tincidunt pellentesque sollicitudin ornare. Euismod facilisis porta eget ultricies. Quis tortor eget id pharetra aliquet amet eget.",
-    user_id: 3,
-    subject: 'физика',
-    count: 1,
-    price: 2500,
-    image_link: '/Edit.svg'
+Subjects.sync({alter: true});
+
+Subjects.create({
+    id: 1,
+    name: 'физика'
 })
+
+// Ads.sync({alter: true});
+
+// Ads.create({
+//     title: 'Подготовка к экзамену по физике',
+//     body: "Lorem ipsum dolor sit amet consectetur. Vitae iaculis metus nulla tellus sem arcu nulla dui. Lectus nec ullamcorper a risus fusce ultrices egestas quis nunc. Euismod nunc purus nunc laoreet sem. In vitae neque ac id facilisis facilisis urna ullamcorper. Mauris sit faucibus dignissim placerat. Ornare accumsan senectus congue praesent ut lacus tempus purus vitae. Adipiscing nisi pellentesque nec interdum lorem quis ut lectus in. Et felis non orci vulputate id ultricies.\nSed nulla quis semper cursus tortor pharetra mauris hendrerit sodales. Dui purus id consectetur massa bibendum duis diam eu. At varius tincidunt pellentesque sollicitudin ornare. Euismod facilisis porta eget ultricies. Quis tortor eget id pharetra aliquet amet eget.",
+//     user_id: 3,
+//     subject: 'физика',
+//     count: 1,
+//     price: 2500,
+//     image_link: '/Edit.svg'
+// })
 
 // Helps.sync({alter: true});
 

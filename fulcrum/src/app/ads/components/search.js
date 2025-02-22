@@ -1,13 +1,14 @@
 'use client'
 
 import { SortButton, BaseButton } from "@/app/components/buttons";
+import { API_HOST } from "@/app/components/host";
 import SearchField from "@/app/components/searchField";
 
 export function Search({setAds, setSort}) {
     function sort() {return}
     async function search() {
         let data = new FormData(document.getElementById('adsearch'));
-        let res = await fetch(`/ads/search?query=${Object.fromEntries(data).query}`, {method: 'GET'});
+        let res = await fetch(`${API_HOST}/ads/search?query=${Object.fromEntries(data).query}`, {method: 'GET'});
         if (res.status == 200) {
             setAds((await res.json()));
         }

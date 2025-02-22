@@ -15,8 +15,8 @@ const app = express();
 
 const host = 'localhost';
 
-const refreshAge = 4320000*1000;
-const accesAge = 60000*1000;
+const refreshAge = 4320000;
+const accesAge = 60000;
 
 class Connection {
     constructor(connectCallback) {
@@ -356,14 +356,11 @@ app.get('/ads/amount', async function(req, res) {
     });
 
     try {
-        let filter = [];
-        if (req.query.university) filter.push({name: 'university', val: req.query.university});
-        if (req.query.subject) filter.push({name: 'subject', val: req.query.subject});
-        if (req.query.course) filter.push({name: 'course', val: req.query.course});
+        console.log(req.query)
         let stroke = 'where ';
-        filter.forEach((elem) => {
-            stroke = stroke.concat(`${elem.name} = '${elem.val}' and `)
-        });
+        if (req.query.university != '0') stroke = stroke.concat(`Users.university = ${req.query.university} and `);
+        if (req.query.subject != '0') stroke = stroke.concat(`Ads.subject = (select name from Subjects where id = ${req.query.subject}) and `);
+        if (req.query.course != '0') stroke = stroke.concat(`Users.course = ${req.query.course} and `);
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
@@ -377,6 +374,8 @@ app.get('/ads/amount', async function(req, res) {
         connection.query(`select count(*) as amount from Ads ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
+                console.log(`select count(*) as amount from Ads ${stroke}`);
+                console.log(result[0].amount);
                 res.status(200);
                 res.send({amount: result[0].amount});
             }
@@ -397,14 +396,10 @@ app.get('/ads', async function(req, res) {
     });
 
     try {
-        let filter = [];
-        if (req.query.university) filter.push({name: 'university', val: req.query.university});
-        if (req.query.subject) filter.push({name: 'subject', val: req.query.subject});
-        if (req.query.course) filter.push({name: 'course', val: req.query.course});
         let stroke = 'where ';
-        filter.forEach((elem) => {
-            stroke.concat(`Ads.${elem.name} = '${elem.val}' and `)
-        });
+        if (req.query.university != '0') stroke = stroke.concat(`Users.university = ${req.query.university} and `);
+        if (req.query.subject != '0') stroke = stroke.concat(`Ads.subject = (select name from Subjects where id = ${req.query.subject}) and `);
+        if (req.query.course != '0') stroke = stroke.concat(`Users.course = ${req.query.course} and `);
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
@@ -415,7 +410,7 @@ app.get('/ads', async function(req, res) {
             });
         });
 
-        connection.query(`select * from Ads join Users on Users.id = Ads.user_id ${stroke}`, function (e, result) {
+        connection.query(`select * from Users join Ads on Users.id = Ads.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
                 res.status(200);
@@ -556,15 +551,10 @@ app.get('/helps/amount', async function(req, res) {
     });
 
     try {
-        let filter = [];
-        if (req.query.university) filter.push({name: 'university', val: req.query.university});
-        if (req.query.part) filter.push({name: 'part', val: req.query.part});
-        if (req.query.tags) filter.push({name: 'tags', val: req.query.tags.split('_')});
         let stroke = 'where ';
-        filter.forEach((elem) => {
-            if (elem.name != 'tags') stroke = stroke.concat(`${elem.name} = '${elem.val}' and `);
-            else elem.val.forEach(tag => stroke = stroke.concat(`tags like '%${tag}%' and `));
-        });
+        if (req.query.university != '0') stroke = stroke.concat(`Users.university = ${req.query.university} and `);
+        if (req.query.part != '0') stroke = stroke.concat(`Helps.part = ${req.query.part}`);
+        if (req.query.tags) req.query.tags.split('_').forEach(tag => stroke = stroke.concat(`Helps.tags like '%${tag}%' and `));
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
@@ -599,15 +589,10 @@ app.get('/helps', async function(req, res) {
     });
 
     try {
-        let filter = [];
-        if (req.query.university) filter.push({name: 'university', val: req.query.university});
-        if (req.query.part) filter.push({name: 'part', val: req.query.part});
-        if (req.query.tags) filter.push({name: 'tags', val: req.query.tags.split('_')});
         let stroke = 'where ';
-        filter.forEach((elem) => {
-            if (elem.name != 'tags') stroke = stroke.concat(`Helps.${elem.name} = '${elem.val}' and `);
-            else elem.val.forEach(tag => stroke = stroke.concat(`Helps.tags like '%${tag}%' and `));
-        });
+        if (req.query.university != '0') stroke = stroke.concat(`Users.university = ${req.query.university} and `);
+        if (req.query.part != '0') stroke = stroke.concat(`Helps.part = ${req.query.part}`);
+        if (req.query.tags) req.query.tags.split('_').forEach(tag => stroke = stroke.concat(`Helps.tags like '%${tag}%' and `));
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
@@ -618,7 +603,7 @@ app.get('/helps', async function(req, res) {
             });
         });
 
-        connection.query(`select * from Helps join Users on Users.id = Helps.user_id ${stroke}`, function (e, result) {
+        connection.query(`select * from Users join Helps on Users.id = Helps.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
                 res.status(200);

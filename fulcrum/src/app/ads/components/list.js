@@ -74,7 +74,6 @@ function Ad({ad}) {
                     <BaseLink text={'Написать'} href={`${APP_HOST}/ads/adcard/${ad.id}`}/>
                     <LikeAd like={ad.isLike} id={ad.id}/>
                     <HideAd isHide={isHide} setIsHide={setIsHide}/>
-                    {/* <button onClick={hide} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button> */}
                 </div>
             </div>
         </li>

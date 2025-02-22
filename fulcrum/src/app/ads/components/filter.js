@@ -59,7 +59,7 @@ export default function Filters({action}) {
 
     useEffect(() => {
         async function getAmount()  {
-            let res = await fetch(`${API_HOST}/ads/amount?${filters[0].name}=${filters[0].value}&${filters[1].name}=${filters[1].value}&${filters[1].name}=${filters[1].value}`, {method: 'GET'});
+            let res = await fetch(`${API_HOST}/ads/amount?${filters[0].name}=${filters[0].value}&${filters[1].name}=${filters[1].value}&${filters[2].name}=${filters[2].value}`, {method: 'GET'});
             if (res.status == 200) {
                 let data = (await res.json()).amount;
                 if (amount != data) setAmount(data);

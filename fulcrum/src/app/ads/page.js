@@ -11,7 +11,6 @@ export default function Page() {
     let [sort, setSort] = useState();
 
     function show(filters) {
-        console.log(filters);
         setShowResults(filters);
         return
     }
