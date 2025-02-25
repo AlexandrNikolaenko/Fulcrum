@@ -830,7 +830,7 @@ app.get('/getad', async function(req, res) {
 });
 
 app.get('/gethelp', async function(req, res) {
-    req.set({
+    res.set({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://localhost:3000"
     });
@@ -847,6 +847,75 @@ app.get('/gethelp', async function(req, res) {
             if (e) res.status(500).send();
             else if (result[0]) {
 
+            }
+        });
+
+        connection.end();
+    } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+});
+
+app.get('/person', async function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000"
+    });
+
+    console.log('here');
+
+    try {
+        let data = {ads: [], helps: []};
+
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e))
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Users where id = ${req.query.id}`, async function(e, result) {
+            if (e) res.status(500).send();
+            else if (result[0]) {
+                data.base = result[0];
+
+                const adCon = await new Promise((resolve, reject) => {
+                    const conn = new Connection((e) => {
+                        if (e) reject(new Error(e));
+                        else resolve(conn);
+                    })
+                });
+                
+                adCon.query(`select * from Ads where user_id = ${result[0].id}`, function(e, adRes) {
+                    if (e) res.status(500).send(data);
+                    else {
+                        adRes.forEach(ad => {
+                            data.ads.push(ad);  
+                        });
+                    }
+                });
+
+                adCon.end();
+
+                const helpCon = await new Promise((resolve, reject) => {
+                    const conn = new Connection((e) => {
+                        if (e) reject(new Error(e));
+                        else resolve(conn);
+                    });
+                });
+
+                helpCon.query(`select *  from Helps where user_id = ${result[0].id}`, function(e, helpRes) {
+                    if (e) res.status(500).send(data);
+                    else {
+                        helpRes.forEach(help => {
+                            data.helps.push(help);  
+                        });
+                        res.status(200).send(data);
+                    }
+                });
+
+                helpCon.end();
             }
         });
 

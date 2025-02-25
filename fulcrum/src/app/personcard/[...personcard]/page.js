@@ -7,37 +7,37 @@ import { PersonsAds, PersonsHelps } from "./components/lists";
 import BaseText from "@/app/components/texts";
 
 export default async function Card({params}) {
-    let personId = params.personcard[0];
-    try {
-        let res = await fetch(`${API_HOST}/getperson?id=${personId}`, {method: 'GET'});
-        if (res.status == 200) {
-            let data = await res.json();
-            return (
-                <>
-                    <section className="flex gap-10">
-                        <div>
-                            <div className="p-2.5 rounded-medium h-[330px] aspect-square">
-                                <Image alt="avatar" fill={true} className="rounded-base"/>
-                            </div>
-                            <BaseInfo person={data.base}/>
+    let personId = (await params).personcard[0];
+    console.log(personId)
+    let res = await fetch(`${API_HOST}/person?id=${personId}`, {method: 'GET'});
+    if (res.status == 200) {
+        let data = await res.json();
+        console.log(data);
+        return (
+            <>
+                <section className="flex gap-10">
+                    <div>
+                        <div className="p-2.5 rounded-medium h-[330px] aspect-square">
+                            <Image alt="avatar" fill={true} className="rounded-base"/>
                         </div>
-                    </section>
-                    <section className="grid-cols-2">
-                        <Info>
-                            <About about={data.base.about}></About>
-                        </Info>
-                        <List>
-                            <Title>Объявления пользователя</Title>
-                            <PersonsAds ads={data.ads}/>
-                            <PersonsHelps ads={data.helps}/>
-                        </List>
-                    </section>
-                </>
-            )
-        }
-        else throw new Error(res.status);
-    } catch(e) {
-        return(
+                        <BaseInfo person={data.base}/>
+                    </div>
+                </section>
+                <section className="grid-cols-2">
+                    <Info>
+                        <About about={data.base.about}></About>
+                    </Info>
+                    <List>
+                        <Title>Объявления пользователя</Title>
+                        <PersonsAds ads={data.ads}/>
+                        <PersonsHelps ads={data.helps}/>
+                    </List>
+                </section>
+            </>
+        )
+    } else {
+        console.log(res.status);
+        return (
             <h3 className="text-dark forn-title text-center">Что то пошло не так или этого пользователя не существует:(</h3>
         )
     }
