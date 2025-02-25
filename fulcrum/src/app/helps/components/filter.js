@@ -3,6 +3,7 @@
 import { BaseButton } from "@/app/components/buttons";
 import { useRef, useState, useEffect } from "react";
 import { API_HOST } from "@/app/components/host";
+import BaseText from "@/app/components/texts";
 
 const defaultFilters = {
     university: {
@@ -171,7 +172,7 @@ function TagsFilter({filter, action}) {
 
 
 function FilterName({children}) {
-    return <p className="text-dark text-base">{children}</p>
+    return <BaseText>{children}</BaseText>
 }
 
 function Filter({filter}) {

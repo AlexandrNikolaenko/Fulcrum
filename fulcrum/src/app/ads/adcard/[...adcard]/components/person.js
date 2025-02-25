@@ -4,6 +4,7 @@ import { BaseLink } from "@/app/components/buttons";
 import { APP_HOST } from "@/app/components/host";
 import Image from "next/image";
 import { useState } from "react";
+import BaseText from "@/app/components/texts";
 
 
 export default function AuthorCard({author}) {
@@ -18,7 +19,7 @@ export default function AuthorCard({author}) {
             <p className="text-2xl font-title text-dark">{author.name}</p>
             <p className="text-base text-dark font-title">{author.university} {author.course}</p>
             <p className="text-base text-dark font-title">О себе</p>
-            <p className="text-base text-dark">{author.about}</p>
+            <BaseText>{author.about}</BaseText>
             <button className="text-dark underline" onClick={() => setIsExpend(!isExpand)}>{isExpand ? 'Свернуть' : 'Развернуть'}</button>
             <BaseLink text={'Перейти на страницу'} href={`${APP_HOST}/personcard/${author.id}`}/>
         </div>

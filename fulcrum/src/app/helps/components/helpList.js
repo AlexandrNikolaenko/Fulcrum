@@ -1,11 +1,12 @@
 import { BaseLink } from "@/app/components/buttons"
 import { APP_HOST, API_HOST } from "@/app/components/host"
+import BaseText, { CenterFullText } from "@/app/components/texts"
 import Image from "next/image"
 import { useState } from "react"
 
 export default function HelpList({helps}) {
     if (!helps || helps.length == 0){
-        return <p className="w-full text-base text-dark text-center">По вашему запросу пока что нет результатов :(</p>
+        return <CenterFullText>По вашему запросу пока что нет результатов :(</CenterFullText>
     }
 
     return (
@@ -44,10 +45,10 @@ function Help({help}) {
         <li className={`flex flex-col gap-2.5 rounded-large p-[15px] bg-white shadow-center`}>
             {help.image_link && <Image alt={'image'} src={help.image_link} fill={true}/>}
             <h2 className="text-dark text-2xl font-bold">{help.title}</h2>
-            <p className="text-base text-dark">{help.university}, {help.course}</p>
-            <p className="text-base text-dark">{help.created_at}</p>
-            <p className="text-base text-dark">{help.body}</p>
-            <div className="flex gap-5">
+            <BaseText>{help.university}, {help.course}</BaseText>
+            <BaseText>{help.created_at}</BaseText>
+            <BaseText>{help.body}</BaseText>
+            <div className="flex gap-5 items-center">
                 <BaseLink text={'Написать'} href={`${APP_HOST}/help/helpcard/${help.id}`}/>
                 <Like like={help.like} id={help.id}/>
                 <button onClick={hide} className="w-fit h-fit"><Image alt="hide" src={"/Hide.svg"} width={24} height={24}></Image></button>

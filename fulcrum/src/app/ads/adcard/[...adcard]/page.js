@@ -5,6 +5,7 @@ import Image from "next/image";
 import Ad from "./components/ad";
 import { API_HOST } from "@/app/components/host";
 import AdButtons from "./components/adButtons";
+import BaseText, { CenterText } from "@/app/components/texts";
 
 export default async function Adcard({params}) {
     const cardId = params.adcard[0];
@@ -22,7 +23,7 @@ export default async function Adcard({params}) {
             </>
         )
     } else {
-        return <p className="text-base text-dark text-center">Что-то пошло не так:(</p>
+        return <CenterText>Что-то пошло не так:(</CenterText>
     }
 }
 
@@ -40,7 +41,7 @@ function BaseInfo({data}) {
                 </div>
             </div>
             <p className="text-dark font-title text-3xl">Описание</p>
-            <p className="text-dark text-base">{data.desc}</p>
+            <BaseText>{data.desc}</BaseText>
         </div>
     )
 }

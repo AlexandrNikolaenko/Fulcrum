@@ -3,6 +3,8 @@
 import { API_HOST } from "@/app/components/host";
 import Image from "next/image";
 import BaseInfo from "./components/baseInfo";
+import { PersonsAds, PersonsHelps } from "./components/lists";
+import BaseText from "@/app/components/texts";
 
 export default async function Card({params}) {
     let personId = params.personcard[0];
@@ -21,12 +23,14 @@ export default async function Card({params}) {
                         </div>
                     </section>
                     <section className="grid-cols-2">
-                        <div className="flex flex-col gap-2.5 w-full">
-
-                        </div>
-                        <div className="flex flex-col gap-5 w-[890px]">
-
-                        </div>
+                        <Info>
+                            <About about={data.base.about}></About>
+                        </Info>
+                        <List>
+                            <Title>Объявления пользователя</Title>
+                            <PersonsAds ads={data.ads}/>
+                            <PersonsHelps ads={data.helps}/>
+                        </List>
                     </section>
                 </>
             )
@@ -39,11 +43,37 @@ export default async function Card({params}) {
     }
 }
 
+function Title({children}) {
+    return (
+        <h3 className="text-dark text-3xl font-title">{children}</h3>
+    )
+}
+
+
+
+function Info({children}) {
+    return (
+        <div className="flex flex-col gap-2.5 w-full">
+            {children}
+        </div>
+    )
+}
+
 function About({about}) {
     return (
         <div className="flex flex-col gap-2.5">
             <p className="text-3xl text-dark font-title">О себе:</p>
-            <p className="text-dark text-base">{about}</p>
+            <BaseText>{about}</BaseText>
         </div>
     )
 }
+
+function List({children}) {
+    return (
+        <div className="flex flex-col gap-5 w-[890px]">
+            {children}
+        </div>
+    )
+}
+
+

@@ -3,6 +3,7 @@
 import { BaseButton } from "@/app/components/buttons";
 import { API_HOST } from "@/app/components/host";
 import { useEffect, useRef, useState } from "react";
+import { DifSizeText } from "@/app/components/texts";
 
 export const defaultFilters = [
     {
@@ -96,7 +97,7 @@ function Filter({filter, change}) {
     if (filter.type == 'radio') {
         return (
             <form id={`adsfilter${filter.id}`} className="flex flex-col gap-2.5 items-start w-full p-5 rounded-base bg-white shadow-center">
-                <p className="text-sm text-dark">{filter.question}</p>
+                <DifSizeText size={'text-lg'}>{filter.question}</DifSizeText>
                 {
                     filter.variants.map((variant) => {
                         return (

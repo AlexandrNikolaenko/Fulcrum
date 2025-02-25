@@ -6,6 +6,7 @@ import Image from "next/image";
 import { BaseLink } from "@/app/components/buttons";
 import { API_HOST, APP_HOST } from "@/app/components/host";
 import { LikeAd, HideAd } from "./likeAndHide";
+import { CenterFullText } from "@/app/components/texts";
 
 let plugs = [
     {
@@ -44,7 +45,7 @@ export default function AdsList({filters, sort, searchData}) {
     if ((ads.length == 0 || !ads) && !isLoad) {
         return <ul className="flex flex-col gap-2.5 w-full">{plugs.map(plug => <Plug key={plug.id} className={'w-full h-[239px] rounded-large bg-white shadow-center'}/>)}</ul>
     } else if ((ads.length == 0 || !ads) && isLoad) {
-        return <p className="w-full text-base text-dark">По вашему запросу пока что нет результатов :(</p>
+        return <CenterFullText>По вашему запросу пока что нет результатов :(</CenterFullText>
     }
 
     return (
@@ -70,7 +71,7 @@ function Ad({ad}) {
                 <p>{ad.university}, {ad.course}</p>
                 <p>Количество воспользовавшихся услугой: {ad.count}</p>
                 <p>{ad.body}</p>
-                <div className="flex gap-2.5">
+                <div className="flex gap-2.5 items-center">
                     <BaseLink text={'Написать'} href={`${APP_HOST}/ads/adcard/${ad.id}`}/>
                     <LikeAd like={ad.isLike} id={ad.id}/>
                     <HideAd isHide={isHide} setIsHide={setIsHide}/>

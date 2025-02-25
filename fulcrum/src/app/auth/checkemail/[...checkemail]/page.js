@@ -1,6 +1,7 @@
 'use server';
 
 import { API_HOST, APP_HOST } from "@/app/components/host";
+import { DifSizeText } from "@/app/components/texts";
 import { redirect } from "next/navigation";
 
 export default async function Check({params}) {
@@ -18,7 +19,7 @@ export default async function Check({params}) {
         console.log(res.status);
         return (
             <div className="flex items-center justify-center h-screen w-full">
-                <p className="text-lg text-dark">Что-то пошло не так:(</p>
+                <DifSizeText size={'text-lg'}>Что-то пошло не так:(</DifSizeText>
             </div>
         )
     }

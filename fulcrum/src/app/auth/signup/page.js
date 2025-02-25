@@ -6,6 +6,7 @@ import OrLine from "../components/or"
 import Link from "next/link"
 import { useState } from "react"
 import { API_HOST, APP_HOST } from "@/app/components/host"
+import { DifSizeText } from "@/app/components/texts"
 
 export default function SignUp() {
     let [isSuccess, setIsSuccess] = useState(false);
@@ -19,7 +20,7 @@ export default function SignUp() {
 
     if (isSuccess) {
         return (
-            <p className="text-lg text-dark">Подтвердите адрес электронной почты, перейдя по ссылке из отправленного письма</p>
+            <DifSizeText size={'text-lg'}>Подтвердите адрес электронной почты, перейдя по ссылке из отправленного письма</DifSizeText>
         )
     }
 

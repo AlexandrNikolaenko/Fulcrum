@@ -22,7 +22,7 @@ export function BaseLink({text, href}) {
 }
 
 export function EditButton({action}) {
-    return(
+        return(
         <button onClick={action} className="flex gap-2.5 rounded-base py-[6px] px-5 bg-">
             <span className="text-dark">Редактировать</span>
             <Image alt="Edit" src={'/Edit.svg'} />
@@ -45,5 +45,11 @@ export function SortButton({action}) {
 export function FilterButton({action}) {
     return (
         <button onClick={action} className="p-2.5 rounded-base bg-white shadow-center"><Image src={'/Filter.svg'} alt="filter" width={20} height={20}/></button>
+    )
+}
+
+export function UnderlineButton({action, text}) {
+    return (
+        <button onClick={action} className="text-dark underline text-base">{text}</button>
     )
 }

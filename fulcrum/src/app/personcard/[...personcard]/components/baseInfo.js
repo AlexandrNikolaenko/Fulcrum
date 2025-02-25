@@ -2,6 +2,7 @@
 
 import { BaseButton } from "@/app/components/buttons"
 import { API_HOST } from "@/app/components/host";
+import BaseText from "@/app/components/texts";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -15,7 +16,7 @@ export default function BaseInfo({person}) {
             <h3 className="font-title text-dark text-3xl">{person.name}</h3>
             <p className="text-dark text-xl font-title">{person.university}, {person.course}</p>
             <p className="text-dark text-xl font-title">О себе:</p>
-            <p className="text-base text-dark">{person.about}</p>
+            <BaseText>{person.about}</BaseText>
             <div className="flex gap-5">
                 <BaseButton text={'Перейти в чат'} action={openChat}/>
                 <LikePerson id={person.id}/>
