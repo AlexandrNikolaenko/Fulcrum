@@ -5,7 +5,7 @@ import {LableInput, InputAuthField} from "../components/inputs"
 import OrLine from "../components/or"
 import Link from "next/link"
 import { useState } from "react"
-import { API_HOST, APP_HOST } from "@/app/components/host"
+import { API_HOST } from "@/app/components/host"
 import { DifSizeText } from "@/app/components/texts"
 
 export default function SignUp() {

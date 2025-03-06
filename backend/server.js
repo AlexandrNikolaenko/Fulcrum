@@ -356,7 +356,6 @@ app.get('/ads/amount', async function(req, res) {
     });
 
     try {
-        console.log(req.query)
         let stroke = 'where ';
         if (req.query.university != '0') stroke = stroke.concat(`Users.university = ${req.query.university} and `);
         if (req.query.subject != '0') stroke = stroke.concat(`Ads.subject = (select name from Subjects where id = ${req.query.subject}) and `);
@@ -374,8 +373,6 @@ app.get('/ads/amount', async function(req, res) {
         connection.query(`select count(*) as amount from Ads ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
             else {
-                console.log(`select count(*) as amount from Ads ${stroke}`);
-                console.log(result[0].amount);
                 res.status(200);
                 res.send({amount: result[0].amount});
             }
@@ -863,8 +860,6 @@ app.get('/person', async function(req, res) {
         "Access-Control-Allow-Origin": "http://localhost:3000"
     });
 
-    console.log('here');
-
     try {
         let data = {ads: [], helps: []};
 
@@ -921,6 +916,32 @@ app.get('/person', async function(req, res) {
 
         connection.end();
     } catch (e) {
+        console.log(e);
+        res.status(500).send();
+    }
+});
+
+app.get('/feedbacks', async function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000"
+    });
+
+    try {
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Feedbacks where user_to = ${req.query.id}`, function(err, result) {
+            if (err) res.status(500).send();
+            else res.status(200).send(result);
+        });
+
+        connection.end();
+    } catch(e) {
         console.log(e);
         res.status(500).send();
     }

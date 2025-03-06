@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UnderlineButton, FilterButton } from "@/app/components/buttons";
 import Image from "next/image";
 import { BaseLink } from "@/app/components/buttons";
 import { LikeAd } from "@/app/ads/components/likeAndHide";
 import Plug from "@/app/components/plug";
 import BaseText from "@/app/components/texts";
-import { APP_HOST } from "@/app/components/host";
+import { API_HOST, APP_HOST } from "@/app/components/host";
 
 function UnderTitle({children}) {
     return (
@@ -28,7 +28,7 @@ export function PersonsAds({ads}) {
                 <UnderTitle>Услуги</UnderTitle>
                 <ul className="flex flex-col gap-2.5">
                     {list.map(ad => <OnceAd key={ad.id} ad={ad}/>)}
-                    <UnderlineButton action={setIsOpen.bind(!isOpen)} text={'Показать все'}/>
+                    {list.length > 2 && <UnderlineButton action={setIsOpen.bind(!isOpen)} text={'Показать все'}/>}
                 </ul>
             </>
         )
@@ -98,25 +98,43 @@ function OnceHelp({help}) {
     )
 }
 
-export function Feedbacks({feedbacks}) {
+export function Feedbacks({userId}) {
+    let [feedbacks, setFeedbacks] = useState({data: null, isSuccess: false, isLoad: false});
+
+    useEffect(() => {
+        async function getData() {
+            if (!feedbacks.isLoad) {
+                try {
+                    let res = await fetch(`${API_HOST}/feedbacks?id=${userId}`, {method: 'GET'});
+                    if (res.ok) setFeedbacks({data: await res.json(), isSuccess: true, isLoad: true});
+                    else throw new Error(res.status);
+                } catch(e) {
+                    console.log(e);
+                    setFeedbacks({isLoad: true, ...feedbacks});
+                }
+            }
+        }
+        getData();
+    })
+
     function filter() {
         return;
     }
-    if (!feedbacks) return <></>
+    if (!feedbacks.isSuccess) return <></>
     return (
         <>  
             <div className="flex w-full items-center justify-between">
                 <h3 className="text-dark text-3xl font-title">Отзывы</h3>
                 <FilterButton action={filter}/>
             </div>
-            {feedbacks.map(feedback => <Feedback key={feedback.id} feedback={feedback}/>)}
+            {feedbacks.data.map(feedback => <Feedback key={feedback.id} feedback={feedback}/>)}
         </>
     )
 }
 
 function Feedback({feedback}) {
     return (
-        <div className="flex flex-col w-full justify-start items-start gap-5">
+        <div className="flex flex-col w-full justify-start items-start gap-5 bg-white shadow-center rounded-medium p-5">
             <div className="flex gap-5">
                 <div className=" relative z-0 rounded-full aspect-square h-full">
                     <Image alt="avatar" fill={true} src={feedback.user.avatar}/>

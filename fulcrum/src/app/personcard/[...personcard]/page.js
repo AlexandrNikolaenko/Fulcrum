@@ -28,7 +28,7 @@ export default async function Card({params}) {
                     <section className="person-grid">
                         <Info>
                             <About about={data.base.about}></About>
-                            <Feedbacks feedbacks={data.base.feedbacks} />
+                            <Feedbacks feedbacks={data.base.id} />
                             {data.base.contacts && <Title>Контакты</Title>}
                             <Contacts contacts={data.base.contacts}/>
                         </Info>
