@@ -3,16 +3,6 @@ import "./globals.css";
 import localFont from 'next/font/local';
 import Header from "./components/header";
 
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
-
 const unbounded = localFont({
   src: [
     {
@@ -27,10 +17,6 @@ const unbounded = localFont({
     }
   ]
 });
-
-// const montserrat = localFont({
-//   src: '../../public/fonts/montserrat-v29-cyrillic_latin-regular.woff2'
-// });
 
 const montserrat = Montserrat({
   variable: "--font-geist-sans",

@@ -26,7 +26,7 @@ export default function BaseInfo({person}) {
 }
 
 function LikePerson({id}) {
-    let [isLike, setIsLike] = useState();
+    let [isLike, setIsLike] = useState(false);
 
     async function like() {
         try {
@@ -39,7 +39,7 @@ function LikePerson({id}) {
                 credentials: 'include',
                 body: JSON.stringify({id: id})
             });
-            if (res.status == 200) setIsLike(!isLike);
+            if (res.ok) setIsLike(!isLike);
             else throw new Error(res.status);
         } catch(e) {
             console.log(e);
@@ -49,6 +49,6 @@ function LikePerson({id}) {
     }
 
     return (
-        <button onClick={like}><Image alt="like" width={24} height={24} src={isLike ? '/notLike.svg' : '/Like.svg'}/></button>
+        <button onClick={like}><Image alt="like" width={24} height={24} src={isLike ? '/Like.svg' : '/notLike.svg'}/></button>
     )
 }

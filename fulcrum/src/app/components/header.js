@@ -24,7 +24,7 @@ export default function Header() {
     
 
     return (
-        <header className="fixed w-full bg-white flex justify-between items-center px-[50px] py-3.5 shadow-down">
+        <header className="z-50 fixed w-full bg-white flex justify-between items-center px-[50px] py-3.5 shadow-down">
             <div className="flex justify-between items-center max-w-[1360px] w-full mx-auto">
                 <Logo />
                 <NavLinks />

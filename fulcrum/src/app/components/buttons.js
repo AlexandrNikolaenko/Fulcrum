@@ -50,6 +50,6 @@ export function FilterButton({action}) {
 
 export function UnderlineButton({action, text}) {
     return (
-        <button onClick={action} className="text-dark underline text-base">{text}</button>
+        <button onClick={action} className="text-dark underline text-base w-fit">{text}</button>
     )
 }

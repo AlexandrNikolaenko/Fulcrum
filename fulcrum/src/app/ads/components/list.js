@@ -66,7 +66,7 @@ function Ad({ad}) {
             <div className="w-full flex flex-col gap-y-2.5">
                 <div className="w-full flex justify-between gap-2.5">
                     <p>{ad.title}</p>
-                    <p>{ad.price}</p>
+                    <p>{ad.price}₽</p>
                 </div>
                 <p>{ad.university}, {ad.course}</p>
                 <p>Количество воспользовавшихся услугой: {ad.count}</p>

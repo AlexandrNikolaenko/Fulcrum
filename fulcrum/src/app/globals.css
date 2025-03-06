@@ -22,6 +22,11 @@ body{
     margin: 0 auto;
 }
 
+.person-grid{
+    display: grid;
+    grid-template-columns: 1fr 890px;
+}
+
 @media screen and (max-width < 1440px){
     .wrapper{
         margin: 0 40px;
