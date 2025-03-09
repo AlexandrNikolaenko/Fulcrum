@@ -8,8 +8,6 @@ const mysql = require('mysql2');
 const crypto = require('crypto');
 const base64url = require('base64url');
 const nodemailer = require("nodemailer");
-const { resolve } = require('path');
-const { title } = require('process');
 
 const app = express();
 
@@ -945,6 +943,39 @@ app.get('/feedbacks', async function(req, res) {
         console.log(e);
         res.status(500).send();
     }
-})
+});
+
+app.get('/account', async function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        'Access-Control-Allow-Credentials': 'true'
+    });
+
+    try {
+        if (req.user) {
+            const connection = await new Promise((resolve, reject) => {
+                const conn = new Connection((err) => {  
+                    if (err) reject(new Error(err));
+                    else resolve(conn);
+                });
+            });
+    
+            connection.query(`select * from Users where id = ${req.user}`, async function(err, results) {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send();
+                } else {
+                    res.status(200).send(results);
+                }
+            });
+            
+            connection.end();
+        } else res.status(401).send();
+    } catch(e) {
+        console.log(e);
+        res.status(500).send();
+    }
+});
 
 app.listen(5000);

@@ -6,16 +6,16 @@ import { API_HOST } from "./host";
 import { useState, useEffect } from "react";
 
 export default function Header() {
-    let [user, setUser] = useState(null);
+    let [user, setUser] = useState({name: null, id: null});
 
     useEffect(() => {
         async function getData () {
-            if (user !== null) return;
+            if (user.name !== null) return;
             let res = await fetch(`${API_HOST}/getuser`, {method: 'GET', credentials: 'include', cache: 'no-cache'});
             if (res.status == 200) {
                 let data = await res.json();
-                if (data.name) setUser(data.name);
-                else if (data.id) setUser(`user_${data.id}`);
+                if (data.name) setUser(data);
+                else if (data.id) setUser({name: `user_${data.id}`, id: data.id});
                 
             }
         }
@@ -28,7 +28,7 @@ export default function Header() {
             <div className="flex justify-between items-center max-w-[1360px] w-full mx-auto">
                 <Logo />
                 <NavLinks />
-                {user ? <UserMenu user={user}/> : <BaseLink text={'Войти'} href={'/auth/signup'} />}
+                {user.name ? <UserMenu user={user}/> : <BaseLink text={'Войти'} href={'/auth/signup'} />}
             </div>
         </header>
     )
@@ -36,7 +36,7 @@ export default function Header() {
 
 function UserMenu({user}) {
     return (
-        <Link href={'/account'}>{user}</Link>
+        <Link href={`/account/${user.id}`}>{user.name}</Link>
     )
 }
 
@@ -45,7 +45,7 @@ function NavLinks() {
         <nav className="flex gap-x-10">
             <Link href={'/'}>Главная</Link>
             <Link href={'/ads'}>Объявления</Link>
-            <Link href={'/help'}>Взаимопомощь</Link>
+            <Link href={'/helps'}>Взаимопомощь</Link>
         </nav>
     )
 }
