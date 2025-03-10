@@ -4,9 +4,14 @@ import { BaseLink } from "./buttons";
 import Link from "next/link";
 import { API_HOST } from "./host";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
     let [user, setUser] = useState({name: null, id: null});
+    let [isShow, setIsShow] = useState(true);
+    let path = usePathname();
+    if (path.split('/')[1] == 'auth' && isShow) setIsShow(false); 
+    else if (path.split('/')[1] != 'auth' && !isShow) setIsShow(true);
 
     useEffect(() => {
         async function getData () {
@@ -22,16 +27,17 @@ export default function Header() {
         getData();
     })
     
-
-    return (
-        <header className="z-50 fixed w-full bg-white flex justify-between items-center px-[50px] py-3.5 shadow-down">
-            <div className="flex justify-between items-center max-w-[1360px] w-full mx-auto">
-                <Logo />
-                <NavLinks />
-                {user.name ? <UserMenu user={user}/> : <BaseLink text={'Войти'} href={'/auth/signup'} />}
-            </div>
-        </header>
-    )
+    if (isShow) {
+        return (
+            <header className="z-50 fixed w-full bg-white flex justify-between items-center px-[50px] py-3.5 shadow-down">
+                <div className="flex justify-between items-center max-w-[1360px] w-full mx-auto">
+                    <Logo />
+                    <NavLinks />
+                    {user.name ? <UserMenu user={user}/> : <BaseLink text={'Войти'} href={'/auth/signup'} />}
+                </div>
+            </header>
+        );
+    } else return <></>
 }
 
 function UserMenu({user}) {

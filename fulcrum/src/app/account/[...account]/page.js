@@ -20,8 +20,8 @@ export default async function Account() {
     } catch(e) {
         console.log(e);
         return (
-            <>
-            </>
+            <main className="relative z-40">
+            </main>
         )
     }    
 }
