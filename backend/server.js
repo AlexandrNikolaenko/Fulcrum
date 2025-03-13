@@ -67,7 +67,7 @@ app.use((req, res, next) => {
                 }
 
             } else if (req.cookies.refresh) {
-
+                
                 let refresh = JSON.parse(Buffer.from(req.cookies.refresh, 'base64').toString('utf8'));
 
                 if (refresh.exp > Date.now() && refresh.id == JSON.parse(Buffer.from(access[1], 'base64').toString('utf8')).id) {
@@ -952,7 +952,7 @@ app.get('/account', async function(req, res) {
         'Access-Control-Allow-Credentials': 'true'
     });
 
-    try {
+    try {   
         if (req.user) {
             const connection = await new Promise((resolve, reject) => {
                 const conn = new Connection((err) => {  
