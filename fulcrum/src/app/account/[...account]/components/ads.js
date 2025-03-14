@@ -5,9 +5,10 @@ import { BaseLink, EditButton, DeleteButton } from "@/app/components/buttons";
 import Image from "next/image";
 import BaseText from "@/app/components/texts";
 import Link from "next/link";
+import { useGetData } from "@/app/components/hooks";
 
 export default function MyAds({user}) {
-    let data = useGetData(`${API_HOST}/usersads?userId=${user.id}`);
+    let {data} = useGetData(`${API_HOST}/usersads?userId=${user.id}`);
 
     return (
         <section className="flex flex-col gap-5 w-full">

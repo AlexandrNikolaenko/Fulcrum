@@ -5,9 +5,10 @@ import { BaseLink, EditButton, DeleteButton } from "@/app/components/buttons";
 import Image from "next/image";
 import BaseText from "@/app/components/texts";
 import Link from "next/link";
+import { useGetData } from "@/app/components/hooks";
 
 export default function MyHelps({userId}) {
-    let data = useGetData(`${API_HOST}/usersads?userId=${userId}`);
+    let {data} = useGetData(`${API_HOST}/usersads?userId=${userId}`);
 
     return (
         <section className="flex flex-col gap-5 w-full">

@@ -23,7 +23,7 @@ export function useGetData(query) {
         getData();
     })
 
-    return data
+    return {data, setData}
 }
 
 export function useGetSecretData(query) {
@@ -55,5 +55,5 @@ export function useGetSecretData(query) {
         getData();
     })
 
-    return data
+    return {data, setData}
 }

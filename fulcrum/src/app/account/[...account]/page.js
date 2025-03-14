@@ -11,7 +11,7 @@ import { H2 } from "./components/titles";
 import { useGetSecretData } from "@/app/components/hooks";
 
 export default function Account() {
-    let data = useGetSecretData(`${API_HOST}/account`);
+    let {data} = useGetSecretData(`${API_HOST}/account`);
     console.log(data.data);
     if (data.isLoad) {
         return (
