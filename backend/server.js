@@ -1006,6 +1006,36 @@ app.get('/usersads', async function(req, res) {
         console.log(e);
         res.status(500).send();
     }
-})
+});
+
+app.get('/usershelps', async function(req, res) {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://localhost:3000"
+    });
+
+    try {
+        const connection = await new Promise((resolve, reject) => {
+            const conn = new Connection((err) => {  
+                if (err) reject(new Error(err));
+                else resolve(conn);
+            });
+        });
+
+        connection.query(`select * from Helps where user_id = ${req.query.userId}`, async function(err, results) {
+            if (err) {
+                console.log(err);
+                res.status(500).send();
+            } else {
+                res.status(200).send(results);
+            }
+        });
+        
+        connection.end();
+    } catch(e) {
+        console.log(e);
+        res.status(500).send();
+    }
+});
 
 app.listen(5000);
