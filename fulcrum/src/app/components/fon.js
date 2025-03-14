@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 
 export default function Fon() {
     let [text, setText] = useState(['', '']);
-    console.log(text);
     let [counter, setCounter] = useState(0);
     const endText = ['Т', 'О', 'Ч', 'К', 'А', 'О', 'П', 'О', 'Р', 'Ы']
     
