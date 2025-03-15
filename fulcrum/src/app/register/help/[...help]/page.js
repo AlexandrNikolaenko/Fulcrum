@@ -14,7 +14,7 @@ export default function Page() {
                 {
                     data.data && data.isSuccess
                     ?
-                    <FillForm data={data.data}/>
+                    <FillForm data={data} setData={setData}/>
                     :
                     <EmptyForm />
                 }
@@ -27,7 +27,7 @@ export default function Page() {
     )
 }
 
-function FillForm({data}) {
+function FillForm({data, setData}) {
     function editImage() {
         document.getElementById("imageHelp").click();
     }
@@ -51,7 +51,7 @@ function FillForm({data}) {
     return (
         <>
             <div className="p-[15px] rounded-large relative shadow-center">
-                <Image alt="image" width={330} height={330} src={`${data.data.avatar ? data.data.avatar : '/DefaultUser.svg'}`} className="rounded-base"/>
+                <Image alt="image" width={330} height={330} src={`${data.data.image_link ? data.data.image_link : '/DefaultUser.svg'}`} className="rounded-base"/>
                 <button onClick={editImage} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
                 <input type="file" accept={'.jpg'} name={'image'} id={'imageHelp'} className="hidden" multiple={false} onChange={setImage} />
             </div>
