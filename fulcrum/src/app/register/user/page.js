@@ -3,7 +3,7 @@
 import { useGetSecretData } from "@/app/components/hooks"
 import { API_HOST } from "@/app/components/host";
 import Image from "next/image";
-import { ButtonsLine, InputField, InputLine, SelectField, TextField } from "../components/input";
+import { ButtonsLine, InputField, InputLine, SelectField, TextField, InputFile } from "../components/input";
 import { courses, universities } from "@/app/components/data";
 import { ImageFetch } from "../components/fetchs";
 
@@ -13,12 +13,14 @@ export default function Page() {
         document.getElementById("avatar").click();
     }
 
-    async function setAvatar(e) {
+    function setAvatar(e) {
         e.preventDefault();
-        let names = [];
-        Array.from(e.target.files).forEach(file => names.push(file.name));
-        names = names.join(', ');
-        ImageFetch({onSuccess: (newData) => setData({...data, data: {...data.data, avatar: newData.avatar}})});
+        ImageFetch({ 
+            query: `${API_HOST}/register/user/newimg`, 
+            onSuccess: (newData) => setData({...data, data: {...data.data, avatar: newData.avatar}}), 
+            onError: () => {}, 
+            formId: 'avatar'
+        });
     }
 
     async function send() {
@@ -36,12 +38,7 @@ export default function Page() {
             <>
                 <div className="p-[15px] rounded-large relative shadow-center">
                     <Image alt="avatar" width={330} height={330} src={`${data.data.avatar ? data.data.avatar : '/DefaultUser.svg'}`} className="rounded-base"/>
-                    <button onClick={editAvatar} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
-                    <input type="file" accept={'.jpg'} name={'avatar'} id={'avatar'} className="hidden" multiple={false} onChange={setAvatar} />
-                    {/* <form className="absolute bottom-[25px] right-[25px]" onSubmit={e => e.preventDefault}>
-                        <button onClick={editAvatar} className="bg-white rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
-                        <input type="file" accept={'.jpg'} name={'avatar'} id={'avatar'} className="hidden" multiple={false} onChange={setAvatar} />
-                    </form> */}
+                    <InputFile editImage={editAvatar} id={'avatar'} name={'avatar'} setImage={setAvatar}/>
                 </div>
                 <form id="userRegister" className="flex flex-col gap-2.5 w-full">
                     <InputLine>

@@ -1,6 +1,7 @@
 'use client'
 
-import { BaseButton } from "@/app/components/buttons"
+import { BaseButton } from "@/app/components/buttons";
+import Image from "next/image";
 
 function Label({name, label}) {
     return (
@@ -66,5 +67,14 @@ export function ButtonsLine({onSend, onBack}) {
             <BaseButton action={onSend} text={'Сохранить'}/>
             <button onClick={onBack} className="text-base text-base-blue rounded-base border-[1px] border-base-blue py-[6px] px-5 bg-transparent active:border-dark-blue active:text-dark-blue focus:border-dark-blue focus:text-dark-blue hover:border-dark-blue hover:text-dark-blue transition-all">Выйти без изменений</button>
         </div>
+    )
+}
+
+export function InputFile({editImage, id, setImage, name}) {
+    return (
+        <>
+            <button onClick={editImage} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
+            <input type="file" accept={'.jpg'} name={name} id={id} className="hidden" multiple={false} onChange={setImage} />
+        </>
     )
 }

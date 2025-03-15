@@ -2,7 +2,7 @@
 
 import { useGetRegisterData } from "@/app/components/hooks";
 import Image from "next/image";
-import { InputField, TextField, SelectField, ButtonsLine, InputLine } from "../../components/input";
+import { InputField, TextField, SelectField, ButtonsLine, InputLine, InputFile } from "../../components/input";
 import { parts } from "@/app/components/data";
 
 export default function Page() {
@@ -30,10 +30,12 @@ function FillForm({data, setData}) {
 
     async function setImage(e) {
         e.preventDefault();
-        let names = [];
-        Array.from(e.target.files).forEach(file => names.push(file.name));
-        names = names.join(', ');
-        ImageFetch({onSuccess: (newData) => setData({...data, data: {...data.data, image_link: newData.image_link}})});
+        ImageFetch({ 
+            query: `${API_HOST}/register/ad/newimg`, 
+            onSuccess: (newData) => setData({...data, data: {...data.data, image_link: newData.image_link}}), 
+            onError: () => {}, 
+            formId: 'imageAd'
+        });
     }
 
     async function send() {
@@ -48,8 +50,7 @@ function FillForm({data, setData}) {
         <>
             <div className="p-[15px] rounded-large relative shadow-center">
                 <Image alt="image" width={330} height={330} src={`${data.data.image_link ? data.data.image_link : '/DefaultUser.svg'}`} className="rounded-base"/>
-                <button onClick={editImage} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
-                <input type="file" accept={'.jpg'} name={'image'} id={'imageAd'} className="hidden" multiple={false} onChange={setImage} />
+                <InputFile editImage={editImage} id={'imageAd'} name={'image'} setImage={setImage}/>
             </div>
             <form id="userRegister" className="flex flex-col gap-2.5 w-full">
                 <InputField label={'Название'} name={'title'} placeholder={'Введите название услуги'} value={data.data.title ? data.data.title : ''}/>
