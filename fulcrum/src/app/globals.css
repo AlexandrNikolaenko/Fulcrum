@@ -16,6 +16,21 @@ body{
     background-color: #F7F7F7;
 }
 
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+input:focus, input:active, input::before, input::after {
+    border-color: transparent !important; 
+}
+
+select::-ms-expand {
+    display: none;
+}
+  
+
 .wrapper{
     max-width: 1360px;
     margin: 0 auto;

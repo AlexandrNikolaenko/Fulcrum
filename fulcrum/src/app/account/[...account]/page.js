@@ -52,7 +52,7 @@ function BaseInfo({data}) {
                 <div className="flex justify-between w-full">
                     <UnderlineButton text={'Посмотреть всю информацию'} action={showAll} />
                     <EditButton action={toEdit} bg={'white'}/>
-                    <Link href={`${APP_HOST}/register`} className="hidden" id="editLink"/>
+                    <Link href={`${APP_HOST}/register/user`} className="hidden" id="editLink"/>
                 </div>
             </div>
         </section>

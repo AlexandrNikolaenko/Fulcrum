@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { API_HOST } from "./host";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation"
 
 export function useGetData(query) {
     let [data, setData] = useState({data: null, isSuccess: false, isLoad: false});
@@ -31,7 +31,6 @@ export function useGetSecretData(query) {
 
     useEffect(() => {
         async function getData() {
-            console.log('here');
             if (!data.isLoad) {
                 
                 let redirectPath = ''
@@ -56,4 +55,10 @@ export function useGetSecretData(query) {
     })
 
     return {data, setData}
+}
+
+export function useGetRegisterData(type) {
+    let id = usePathname().split('/');
+    id = id[id.length - 1];
+    return useGetSecretData(`${API_HOST}/register/${type}?id=${id}`);
 }

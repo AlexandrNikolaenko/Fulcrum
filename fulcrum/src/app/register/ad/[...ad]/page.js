@@ -1,0 +1,70 @@
+'use client'
+
+import { useGetRegisterData } from "@/app/components/hooks";
+import Image from "next/image";
+import { InputField, TextField, SelectField, ButtonsLine } from "../../components/input";
+import { parts } from "@/app/components/data";
+
+export default function Page() {
+     let {data, setData} = useGetRegisterData('ad');
+    
+    if (data.isLoad) {
+        return (
+            <>
+                {
+                    data.data && data.isSuccess
+                    ?
+                    <FillForm data={data.data} setData={setData}/>
+                    :
+                    <EmptyForm />
+                }
+            </>
+        )
+    }
+}
+
+function FillForm({data, setData}) {
+    function editImage() {
+        document.getElementById("imageAd").click();
+    }
+
+    async function setImage(e) {
+        e.preventDefault();
+        let names = [];
+        Array.from(e.target.files).forEach(file => names.push(file.name));
+        names = names.join(', ');
+        ImageFetch({onSuccess: (newData) => setData({...data, data: {...data.data, image_link: newData.image_link}})});
+    }
+
+    async function send() {
+
+    }
+
+    async function BackToProfile() {
+
+    }
+
+    return (
+        <>
+            <div className="p-[15px] rounded-large relative shadow-center">
+                <Image alt="image" width={330} height={330} src={`${data.data.avatar ? data.data.avatar : '/DefaultUser.svg'}`} className="rounded-base"/>
+                <button onClick={editImage} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
+                <input type="file" accept={'.jpg'} name={'image'} id={'imageAd'} className="hidden" multiple={false} onChange={setImage} />
+            </div>
+            <form id="userRegister" className="flex flex-col gap-2.5 w-full">
+                <InputField label={'Название'} name={'title'} placeholder={'Введите название услуги'} value={data.data.title ? data.data.title : ''}/>
+                <SelectField values={parts} label={'Укажите предметную область'} name={'part'} placeholder={'Введите название области'} value={data.data.part ? data.data.part : ''}/>
+                <InputField label={'Укажите начальную цену услуги'} name={'price'} type={'price'} placeholder={'Введите сумму'} value={data.data.prcie ? data.data.price : ''}/>
+                <TextField label={'Описание'} name={'body'} placeholder={'ВОпишите услугу подробнее'} value={data.data.body ? data.data.body : ''}/>
+            </form>
+            <ButtonsLine onSend={send} onBack={BackToProfile}/>
+        </>
+    )
+}
+
+function EmptyForm() {
+    return (
+        <>
+        </>
+    )
+}

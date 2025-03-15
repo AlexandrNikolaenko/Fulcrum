@@ -6,6 +6,7 @@ import Image from "next/image";
 import BaseText from "@/app/components/texts";
 import Link from "next/link";
 import { useGetData } from "@/app/components/hooks";
+import { API_HOST, APP_HOST } from "@/app/components/host";
 
 export default function MyHelps({userId}) {
     let {data} = useGetData(`${API_HOST}/usersads?userId=${userId}`);

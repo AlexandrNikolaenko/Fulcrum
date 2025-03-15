@@ -16,6 +16,11 @@ const host = 'localhost';
 const refreshAge = 4320000;
 const accesAge = 60000;
 
+function setHeaders(res, credentials) {
+    if (!credentials) res.set({"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000"});
+    else res.set({"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://localhost:3000", 'Access-Control-Allow-Credentials': 'true'})
+}
+
 class Connection {
     constructor(connectCallback) {
         try {
@@ -40,6 +45,15 @@ class Connection {
 
     end(callback) {
         this.connection.end((err) => {if (callback) callback(err)});
+    }
+
+    static setConnection() {
+        return new Promise((resolve, reject) => {
+            const conn = new Connection((e) => {
+                if (e) reject(new Error(e));
+                else resolve(conn);
+            });
+        })
     }
 }
 
@@ -127,12 +141,7 @@ async function getTokens(res, {userId, email}) {
     if (userId) newId = `${Date.now()}.${userId}`;
     else {
         try {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
             
             connection.query(`select id from Users where email = '${email}'`, function(e, result) {
                 if (e) throw new Error(e);
@@ -167,19 +176,10 @@ async function getTokens(res, {userId, email}) {
 }
 
 app.get('/auth/login', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select id, password from Users where email = '${req.query.email}'`, async function(e, result) {
             if (e) res.status(500).send();
@@ -211,20 +211,12 @@ app.get('/auth/login', async function(req, res) {
 });
 
 app.get('/auth/signup', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    });
+    setHeaders(res);
 
     let returnData = {}
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
     
         connection.query(`select * from Users where email = '${req.query.email}'`, function(e, result) {
             if (e) res.status(500).send();
@@ -261,19 +253,10 @@ app.get('/auth/signup', async function(req, res) {
 });
 
 app.post('/auth/adduser', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true)
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         let {email, password} = JSON.parse(Buffer.from(req.body.link, 'base64').toString('utf8'));
     
@@ -300,22 +283,13 @@ app.post('/auth/adduser', async function(req, res) {
 });
 
 app.get('/getuser', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     let data = {}
     
     try {
         if (typeof req.user != 'undefined') {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
     
             connection.query(`select username from Users where id = ${req.user}`, function(err, result) {
                 if (err) res.status(500).send();
@@ -348,10 +322,7 @@ app.get('/getuser', async function(req, res) {
 });
 
 app.get('/ads/amount', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-    });
+    setHeaders(res);
 
     try {
         let stroke = 'where ';
@@ -361,12 +332,7 @@ app.get('/ads/amount', async function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select count(*) as amount from Ads ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
@@ -385,10 +351,7 @@ app.get('/ads/amount', async function(req, res) {
 });
 
 app.get('/ads', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-    });
+    setHeaders(res);
 
     try {
         let stroke = 'where ';
@@ -398,12 +361,7 @@ app.get('/ads', async function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Users join Ads on Users.id = Ads.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
@@ -422,20 +380,11 @@ app.get('/ads', async function(req, res) {
 });
 
 app.post('/ads/like', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {
         if (req.user) {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
 
             let likes = [];
     
@@ -451,12 +400,7 @@ app.post('/ads/like', async function(req, res) {
             connection.end(async (err) => {
                 if (err) res.status(500).send();
                 else {
-                    const con = await new Promise((resolve, reject) => {
-                        const conn = new Connection((e) => {
-                            if (e) reject(new Error(e));
-                            else resolve(conn);
-                        });
-                    });
+                    const con = await Connection.setConnection();
     
                     con.query(`update Users set ad_like = ${JSON.stringify(likes)} where id = ${req.user}`, function(e, _) {
                         if (e) res.status(500).send();
@@ -481,20 +425,11 @@ app.post('/ads/like', async function(req, res) {
 });
 
 app.post('/ads/hide', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {
         if (req.user) {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
 
             let hides = [];
     
@@ -510,12 +445,7 @@ app.post('/ads/hide', async function(req, res) {
             connection.end(async (err) => {
                 if (err) res.status(500).send();
                 else {
-                    const con = await new Promise((resolve, reject) => {
-                        const conn = new Connection((e) => {
-                            if (e) reject(new Error(e));
-                            else resolve(conn);
-                        });
-                    });
+                    const con = await Connection.setConnection();
     
                     con.query(`update Users set ad_hide = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
                         if (e) res.status(500).send();
@@ -540,10 +470,7 @@ app.post('/ads/hide', async function(req, res) {
 });
 
 app.get('/helps/amount', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-    });
+    setHeaders(res);
 
     try {
         let stroke = 'where ';
@@ -553,12 +480,7 @@ app.get('/helps/amount', async function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select count(*) as amount from Helps ${stroke}`, function(e, result) {
             if (e) res.status(500).send();
@@ -578,10 +500,7 @@ app.get('/helps/amount', async function(req, res) {
 });
 
 app.get('/helps', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-    });
+    setHeaders(res);
 
     try {
         let stroke = 'where ';
@@ -591,12 +510,7 @@ app.get('/helps', async function(req, res) {
         if (stroke == 'where ') stroke = '';
         else stroke = stroke.slice(0, stroke.length - 5);
 
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Users join Helps on Users.id = Helps.user_id ${stroke}`, function (e, result) {
             if (e) res.status(500).send();
@@ -615,20 +529,11 @@ app.get('/helps', async function(req, res) {
 });
 
 app.post('/helps/like', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {
         if (req.user) {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
 
             let hides = [];
     
@@ -644,12 +549,7 @@ app.post('/helps/like', async function(req, res) {
             connection.end(async (err) => {
                 if (err) res.status(500).send();
                 else {
-                    const con = await new Promise((resolve, reject) => {
-                        const conn = new Connection((e) => {
-                            if (e) reject(new Error(e));
-                            else resolve(conn);
-                        });
-                    });
+                    const con = await Connection.setConnection();
     
                     con.query(`update Users set help_like = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
                         if (e) res.status(500).send();
@@ -674,20 +574,11 @@ app.post('/helps/like', async function(req, res) {
 });
 
 app.post('/helps/hide', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {
         if (req.user) {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((e) => {
-                    if (e) reject(new Error(e));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
 
             let hides = [];
     
@@ -703,12 +594,7 @@ app.post('/helps/hide', async function(req, res) {
             connection.end(async (err) => {
                 if (err) res.status(500).send();
                 else {
-                    const con = await new Promise((resolve, reject) => {
-                        const conn = new Connection((e) => {
-                            if (e) reject(new Error(e));
-                            else resolve(conn);
-                        });
-                    });
+                    const con = await Connection.setConnection();
     
                     con.query(`update Users set help_hide = ${JSON.stringify(hides)} where id = ${req.user}`, function(e, _) {
                         if (e) res.status(500).send();
@@ -733,18 +619,10 @@ app.post('/helps/hide', async function(req, res) {
 });
 
 app.get('/getad', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e))
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         let data = {};
 
@@ -759,12 +637,7 @@ app.get('/getad', async function(req, res) {
                     desc: result[0].body
                 };
 
-                const conUser = await new Promise(function (resolve, reject) {
-                    const conn = new Connection((e) => {
-                        if (e) reject(new Error(e))
-                        else resolve(conn);
-                    });
-                });
+                const conUser = await Connection.setConnection();
 
                 conUser.query(`select * from Users where ${result[0].user_id}`, function(err, userResult) {
                     if (err || !result[0]) res.status(500).send();
@@ -786,12 +659,7 @@ app.get('/getad', async function(req, res) {
 
                 conUser.end();
 
-                const conSame = await new Promise(function (resolve, reject) {
-                    const conn = new Connection((e) => {
-                        if (e) reject(new Error(e));
-                        else resolve(conn);
-                    });
-                });
+                const conSame = await Connection.setConnection();
 
                 conSame.query(`select * from Ads join Users on Ads.user_id = Users.id where Ads.subject = '${result[0].subject}' and Ads.id != ${req.query.id} limit 3`, function(err, sameResult) {
                     if (err) res.status(500).send();
@@ -825,18 +693,10 @@ app.get('/getad', async function(req, res) {
 });
 
 app.get('/gethelp', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e))
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Helps where id = ${req.query.id}`, function(e, result) {
             if (e) res.status(500).send();
@@ -853,32 +713,19 @@ app.get('/gethelp', async function(req, res) {
 });
 
 app.get('/person', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
         let data = {ads: [], helps: []};
 
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e))
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Users where id = ${req.query.id}`, async function(e, result) {
             if (e) res.status(500).send();
             else if (result[0]) {
                 data.base = result[0];
 
-                const adCon = await new Promise((resolve, reject) => {
-                    const conn = new Connection((e) => {
-                        if (e) reject(new Error(e));
-                        else resolve(conn);
-                    })
-                });
+                const adCon = await Connection.setConnection();
                 
                 adCon.query(`select * from Ads where user_id = ${result[0].id}`, function(e, adRes) {
                     if (e) res.status(500).send(data);
@@ -891,12 +738,7 @@ app.get('/person', async function(req, res) {
 
                 adCon.end();
 
-                const helpCon = await new Promise((resolve, reject) => {
-                    const conn = new Connection((e) => {
-                        if (e) reject(new Error(e));
-                        else resolve(conn);
-                    });
-                });
+                const helpCon = await Connection.setConnection();
 
                 helpCon.query(`select *  from Helps where user_id = ${result[0].id}`, function(e, helpRes) {
                     if (e) res.status(500).send(data);
@@ -920,18 +762,10 @@ app.get('/person', async function(req, res) {
 });
 
 app.get('/feedbacks', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((e) => {
-                if (e) reject(new Error(e));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Feedbacks where user_to = ${req.query.id}`, function(err, result) {
             if (err) res.status(500).send();
@@ -946,20 +780,11 @@ app.get('/feedbacks', async function(req, res) {
 });
 
 app.get('/account', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000",
-        'Access-Control-Allow-Credentials': 'true'
-    });
+    setHeaders(res, true);
 
     try {   
         if (req.user) {
-            const connection = await new Promise((resolve, reject) => {
-                const conn = new Connection((err) => {  
-                    if (err) reject(new Error(err));
-                    else resolve(conn);
-                });
-            });
+            const connection = await Connection.setConnection();
     
             connection.query(`select * from Users where id = ${req.user}`, async function(err, results) {
                 if (err) {
@@ -979,18 +804,10 @@ app.get('/account', async function(req, res) {
 });
 
 app.get('/usersads', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((err) => {  
-                if (err) reject(new Error(err));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Ads where user_id = ${req.query.userId}`, async function(err, results) {
             if (err) {
@@ -1009,18 +826,10 @@ app.get('/usersads', async function(req, res) {
 });
 
 app.get('/usershelps', async function(req, res) {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "http://localhost:3000"
-    });
+    setHeaders(res);
 
     try {
-        const connection = await new Promise((resolve, reject) => {
-            const conn = new Connection((err) => {  
-                if (err) reject(new Error(err));
-                else resolve(conn);
-            });
-        });
+        const connection = await Connection.setConnection();
 
         connection.query(`select * from Helps where user_id = ${req.query.userId}`, async function(err, results) {
             if (err) {
@@ -1035,6 +844,91 @@ app.get('/usershelps', async function(req, res) {
     } catch(e) {
         console.log(e);
         res.status(500).send();
+    }
+});
+
+app.get('/register/user', async function (req, res) {
+    setHeaders(res, true);
+
+    if (req.user) {
+        try {
+            const connection = await Connection.setConnection();
+
+            connection.query(`select * from Users where id = ${req.user}`, function(err, result) {
+                if (err) {
+                    console.log(e);
+                    res.status(500).send();
+                } else if (result[0]) res.status(200).send(result[0]);
+                else res.status(401).send();
+            });
+
+            connection.end();
+        } catch (e) {
+            console.log(e);
+            res.status(500).send();
+        }
+    } else {
+        res.status(401).send();
+    }
+    
+});
+
+app.get('/register/ad', async function (req, res) {
+    setHeaders(res, true);
+
+    if (req.user) {
+        if (req.query.id == 'new') {
+            res.status(200).send()
+        } else {
+            try {
+                const connection = await Connection.setConnection();
+        
+                connection.query(`select * from Ads where id = ${req.query.id}`, function(err, result) {
+                    if (err) {
+                        console.log(e);
+                        res.status(500).send();
+                    } else if (result[0]) res.status(200).send(result[0]);
+                    else res.status(401).send();
+                });
+    
+                connection.end();
+            } catch (e) {
+                console.log(e);
+                res.status(500).send();
+            }
+        }
+    } else {
+        res.status(401).send();
+    }
+    
+});
+
+app.get('/register/help', async function (req, res) {
+    setHeaders(res, true);
+
+    if (req.user) {
+        if (req.query.id == 'new') {
+            res.status(200).send()
+        } else {
+            try {
+                const connection = await Connection.setConnection();
+
+                connection.query(`select * from Helps where id = ${req.query.id}`, function(err, result) {
+                    if (err) {
+                        console.log(e);
+                        res.status(500).send();
+                    } else if (result[0]) res.status(200).send(result[0]);
+                    else res.status(401).send();
+                });
+
+                connection.end();
+            } catch (e) {
+                console.log(e);
+                res.status(500).send();
+            }
+        }
+    } else {
+        res.status(401).send();
     }
 });
 
