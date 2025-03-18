@@ -50,9 +50,9 @@ function FillForm({data, setData}) {
         <>
             <div className="p-[15px] rounded-large relative shadow-center">
                 <Image alt="image" width={330} height={330} src={`${data.data.image_link ? data.data.image_link : '/DefaultUser.svg'}`} className="rounded-base"/>
-                <InputFile editImage={editImage} id={'imageAd'} name={'image'} setImage={setImage}/>
+                <InputFile editImage={editImage} id={'imageAd'} name={'imageAd'} setImage={setImage}/>
             </div>
-            <form id="userRegister" className="flex flex-col gap-2.5 w-full">
+            <form id="adRegister" className="flex flex-col gap-2.5 w-full">
                 <InputField label={'Название'} name={'title'} placeholder={'Введите название услуги'} value={data.data.title ? data.data.title : ''}/>
                 <InputLine>
                     <SelectField values={parts} label={'Укажите предметную область'} name={'part'} placeholder={'Введите название области'} value={data.data.part ? data.data.part : ''}/>

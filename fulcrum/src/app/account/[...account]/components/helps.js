@@ -14,7 +14,7 @@ export default function MyHelps({userId}) {
     return (
         <section className="flex flex-col gap-5 w-full">
             <H3>Взаимопомощь</H3>
-            <BaseLink text={'Разместить объявление'} href={`${APP_HOST}/register`}/>
+            <BaseLink text={'Разместить объявление'} href={`${APP_HOST}/register/help/new`}/>
             {
                 (data.isLoad && data.isSuccess) &&
                 <ul className="flex w-full flex-col gap-2.5">

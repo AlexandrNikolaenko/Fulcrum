@@ -12,8 +12,8 @@ import { useGetSecretData } from "@/app/components/hooks";
 
 export default function Account() {
     let {data} = useGetSecretData(`${API_HOST}/account`);
-    console.log(data.data);
-    if (data.isLoad) {
+    console.log(data);
+    if (data.isLoad && data.data) {
         return (
             <main className="relative z-40 pt-[502px]">
                 {

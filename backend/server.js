@@ -8,11 +8,10 @@ const mysql = require('mysql2');
 const crypto = require('crypto');
 const base64url = require('base64url');
 const nodemailer = require("nodemailer");
+const multer = require('multer');
 
 const app = express();
-
 const host = 'localhost';
-
 const refreshAge = 4320000;
 const accesAge = 60000;
 
@@ -64,11 +63,16 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-      user: "alexnikol092004@gmail.com",
-      pass: config.gmail.emailkey,
+        user: "alexnikol092004@gmail.com",
+        pass: config.gmail.emailkey,
     },
 });
 
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
+app.use(bodyParser.json());
 app.use(cookieParser());
 app.use((req, res, next) => {
     try {
@@ -133,8 +137,23 @@ app.use((req, res, next) => {
     
     next();
 })
-app.use(cors());
-app.use(bodyParser.json());
+app.use('/img/users', express.static('./img/Users'));
+app.use('/img/ads', express.static('./img/Ads'));
+app.use('/img/helps', express.static('./img/Helps'));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    console.log(file);
+    if (file.fieldname == 'avatar') cb(null, `./img/Users/`);
+    else if (file.fieldname == 'imageAd') cb(null, `./img/Ads/`);
+    else cb(null, `./img/Helps/`);
+  },
+  filename: (req, file, cb) => {
+      cb(null, `${req.user}.jpg`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 async function getTokens(res, {userId, email}) {
     let newId
@@ -806,21 +825,25 @@ app.get('/account', async function(req, res) {
 app.get('/usersads', async function(req, res) {
     setHeaders(res);
 
-    try {
-        const connection = await Connection.setConnection();
-
-        connection.query(`select * from Ads where user_id = ${req.query.userId}`, async function(err, results) {
-            if (err) {
-                console.log(err);
-                res.status(500).send();
-            } else {
-                res.status(200).send(results);
-            }
-        });
-        
-        connection.end();
-    } catch(e) {
-        console.log(e);
+    if (req.query.userId != 'undefined') {
+        try {
+            const connection = await Connection.setConnection();
+    
+            connection.query(`select * from Ads where user_id = ${req.query.userId}`, async function(err, results) {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send();
+                } else {
+                    res.status(200).send(results);
+                }
+            });
+            
+            connection.end();
+        } catch(e) {
+            console.log(e);
+            res.status(500).send();
+        }
+    } else {
         res.status(500).send();
     }
 });
@@ -930,6 +953,37 @@ app.get('/register/help', async function (req, res) {
     } else {
         res.status(401).send();
     }
+});
+
+app.post('/register/help/newimg', upload.single('image'), function(req, res) {
+    setHeaders(res, true);
+
+    if (req.user && req.body.image) {
+        res.status(200).send({image_link: `http://${host}:5000/img/helps/${req.user}`});
+    } else if (!res.user) res.status(401).send();
+    else res.status(500).send();
+});
+
+app.post('/register/user/newimg', upload.single('avatar'), function(req, res) {
+    setHeaders(res, true);
+    console.log(res.getHeaders());
+
+    console.log('here');
+    if (req.user) {
+        console.log(req.file)
+        if (req.file) {
+            res.status(200).send({avatar: `http://${host}:5000/img/users/${req.user}.jpg`});
+        } else res.status(500).send();
+    } else res.status(401).send();
+});
+
+app.post('/register/ad/newimg', upload.single('image'), function(req, res) {
+    setHeaders(res, true);
+
+    if (req.user && req.body.image) {
+        res.status(200).send({image_link: `http://${host}:5000/img/ads/${req.user}`});
+    } else if (!res.user) res.status(401).send();
+    else res.status(500).send();
 });
 
 app.listen(5000);

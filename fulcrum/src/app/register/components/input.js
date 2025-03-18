@@ -73,7 +73,7 @@ export function ButtonsLine({onSend, onBack}) {
 export function InputFile({editImage, id, setImage, name}) {
     return (
         <>
-            <button onClick={editImage} className="bg-white absolute bottom-[25px] right-[25px] rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
+            <button onClick={editImage} className="bg-white rounded-full aspect-square overflow-hidden p-2.5"><Image alt="edit" width={20} height={20} src={'/Edit.svg'}/></button>
             <input type="file" accept={'.jpg'} name={name} id={id} className="hidden" multiple={false} onChange={setImage} />
         </>
     )

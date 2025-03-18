@@ -9,8 +9,9 @@ import { ImageFetch } from "../components/fetchs";
 
 export default function Page() {
     let {data, setData} = useGetSecretData(`${API_HOST}/register/user`);
-    function editAvatar() {
-        document.getElementById("avatar").click();
+    function editAvatar(e) {
+        e.preventDefault();
+        document.getElementById('avataInput').click();
     }
 
     function setAvatar(e) {
@@ -37,8 +38,10 @@ export default function Page() {
             data.isSuccess &&
             <>
                 <div className="p-[15px] rounded-large relative shadow-center">
-                    <Image alt="avatar" width={330} height={330} src={`${data.data.avatar ? data.data.avatar : '/DefaultUser.svg'}`} className="rounded-base"/>
-                    <InputFile editImage={editAvatar} id={'avatar'} name={'avatar'} setImage={setAvatar}/>
+                    <Image alt="avatar" width={330} height={330} src={`${data.data.avatar ? `${data.data.avatar}?nocache=${Date.now()}` : '/DefaultUser.svg'}`} className="rounded-base"/>
+                    <form id={'avatar'} className="absolute bottom-[25px] right-[25px]">
+                        <InputFile editImage={editAvatar} id={'avataInput'} name={'avatar'} setImage={setAvatar}/>
+                    </form>
                 </div>
                 <form id="userRegister" className="flex flex-col gap-2.5 w-full">
                     <InputLine>

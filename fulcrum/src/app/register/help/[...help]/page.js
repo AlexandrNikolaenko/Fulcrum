@@ -4,6 +4,7 @@ import { useGetRegisterData } from "@/app/components/hooks";
 import Image from "next/image";
 import { InputField, TextField, SelectField, ButtonsLine, InputFile } from "../../components/input";
 import { parts } from "@/app/components/data";
+import { ImageFetch } from "../../components/fetchs";
 
 export default function Page() {
     let {data, setData} = useGetRegisterData('help');
@@ -43,7 +44,7 @@ function FillForm({data, setData}) {
     }
 
     async function send() {
-
+        let formData = new FormData()
     }
 
     async function BackToProfile() {
@@ -54,9 +55,9 @@ function FillForm({data, setData}) {
         <>
             <div className="p-[15px] rounded-large relative shadow-center">
                 <Image alt="image" width={330} height={330} src={`${data.data.image_link ? data.data.image_link : '/DefaultUser.svg'}`} className="rounded-base"/>
-                <InputFile editImage={editImage} id={'imageHelp'} name={'image'} setImage={setImage}/>
+                <InputFile editImage={editImage} id={'imageHelp'} name={'imageHelp'} setImage={setImage}/>
             </div>
-            <form id="userRegister" className="flex flex-col gap-2.5 w-full">
+            <form id="helpRegister" className="flex flex-col gap-2.5 w-full">
                 <InputField label={'Название'} name={'title'} placeholder={'Введите название услуги'} value={data.data.title ? data.data.title : ''}/>
                 <SelectField values={parts} label={'Укажите предметную область'} name={'part'} placeholder={'Введите название области'} value={data.data.part ? data.data.part : ''}/>
                 {/* <InputField label={'Укажите начальную цену услуги'} name={'price'} type={'price'} placeholder={'Введите сумму'} value={data.data.prcie ? data.data.price : ''}/> */}

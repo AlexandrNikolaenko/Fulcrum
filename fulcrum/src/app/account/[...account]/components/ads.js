@@ -9,7 +9,10 @@ import { useGetData } from "@/app/components/hooks";
 import { API_HOST, APP_HOST } from "@/app/components/host";
 
 export default function MyAds({user}) {
-    let {data} = useGetData(`${API_HOST}/usersads?userId=${user.id}`);
+    let query = `${API_HOST}/usersads?userId=${user.id}`
+    console.log(query);
+    
+    let {data} = useGetData(query);
 
     return (
         <section className="flex flex-col gap-5 w-full">
@@ -26,7 +29,6 @@ export default function MyAds({user}) {
 }
 
 function MyAd({ad}) {
-    console.log(ad);
     function toEdit() {
         document.getElementById(`editAdLink${ad.id}`).click();
     }
