@@ -3,7 +3,7 @@
 import { useGetSecretData } from "@/app/components/hooks"
 import { API_HOST } from "@/app/components/host";
 import Image from "next/image";
-import { ButtonsLine, InputField, InputLine, SelectField, TextField, InputFile } from "../components/input";
+import { ButtonsLine, InputField, InputLine, SelectField, TextField, InputFile, DeleteImage } from "../components/input";
 import { courses, universities } from "@/app/components/data";
 import { ImageFetch } from "../components/fetchs";
 
@@ -12,6 +12,11 @@ export default function Page() {
     function editAvatar(e) {
         e.preventDefault();
         document.getElementById('avataInput').click();
+    }
+
+    function deleteAvatar(e) {
+        e.preventDefault();
+        setData({...data, data: {...data.data, avatar: null}});
     }
 
     function setAvatar(e) {
@@ -26,7 +31,7 @@ export default function Page() {
 
     async function send(e) {
         e.preventDefault();
-        
+
     }
 
     async function BackToProfile() {
@@ -40,6 +45,7 @@ export default function Page() {
             <>
                 <div className="p-[15px] rounded-large relative shadow-center">
                     <Image alt="avatar" width={330} height={330} src={`${data.data.avatar ? `${data.data.avatar}?nocache=${Date.now()}` : '/DefaultUser.svg'}`} className="rounded-base"/>
+                    <DeleteImage deleteAction={deleteAvatar} current={data.data.avatar}/>
                     <form id={'avatar'} className="absolute bottom-[25px] right-[25px]">
                         <InputFile editImage={editAvatar} id={'avataInput'} name={'avatar'} setImage={setAvatar}/>
                     </form>

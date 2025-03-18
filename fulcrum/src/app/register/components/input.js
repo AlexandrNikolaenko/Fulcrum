@@ -78,3 +78,12 @@ export function InputFile({editImage, id, setImage, name}) {
         </>
     )
 }
+
+export function DeleteImage({deleteAction, current}) {
+    if (current) {
+        return <></>
+    }
+    return (
+        <button className="bg-white absolute top-2.5 right-2.5 rounded-full aspect-square overflow-hidden p-2.5" onClick={deleteAction}><Image alt="delete" width={20} height={20} src={'/delete.svg'}/></button>
+    )
+}

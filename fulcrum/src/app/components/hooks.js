@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { API_HOST } from "./host";
+import { API_HOST, APP_HOST } from "./host";
 import { redirect, usePathname } from "next/navigation"
 
 export function useGetData(query) {
@@ -41,7 +41,7 @@ export function useGetSecretData(query) {
                         cache: 'no-cache'
                     });
                     if (res.ok) setData({data: await res.json(), isLoad: true, isSuccess: true});
-                    else if (res.status == 401) redirectPath = `${API_HOST}/auth/signup`;
+                    else if (res.status == 401) redirectPath = `${APP_HOST}/auth/signup`;
                     else throw new Error();
                 } catch(e) {
                     console.log(e);
