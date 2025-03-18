@@ -9,6 +9,8 @@ const crypto = require('crypto');
 const base64url = require('base64url');
 const nodemailer = require("nodemailer");
 const multer = require('multer');
+const AWS = require('aws-sdk');
+const path = require('path')
 
 const app = express();
 const host = 'localhost';
@@ -57,6 +59,55 @@ class Connection {
 }
 
 const config = toml.parse(fs.readFileSync('./config.toml', 'utf-8'));
+
+class SelectelStorage {
+    constructor() {
+        this.s3 = new AWS.S3({
+            endpoint: `https://31792ed8-9847-4b85-836d-6c0017433c23.selstorage.ru/`,
+            accessKeyId: config.selectel.key,
+            secretAccessKey: '',
+            s3ForcePathStyle: true,
+            signatureVersion: 'v4',
+        });
+    }
+
+    static setStorage() {
+        return new SelectelStorage();
+    }
+
+    async uploadFile(filePath, bucketName) {
+        const fileContent = fs.readFileSync(filePath);
+        const fileName = path.basename(filePath);
+
+        const params = {
+            Bucket: bucketName, // название контейнера (бакета)
+            Key: fileName, // имя файла в облаке
+            Body: fileContent,
+            ACL: 'public-read', // если нужно сделать файл публичным
+        };
+
+        try {
+            const data = await this.s3.upload(params).promise();
+            return {path: data.Location};
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+
+    async deleteFile(bucketName, fileName) {
+        const params = {
+            Bucket: bucketName,
+            Key: fileName,
+        };
+    
+        try {
+            await s3.deleteObject(params).promise();
+            return true;
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+}
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -958,10 +1009,10 @@ app.get('/register/help', async function (req, res) {
 app.post('/register/help/newimg', upload.single('image'), function(req, res) {
     setHeaders(res, true);
 
-    if (req.user && req.body.image) {
-        res.status(200).send({image_link: `http://${host}:5000/img/helps/${req.user}`});
-    } else if (!res.user) res.status(401).send();
-    else res.status(500).send();
+    if (req.user) {
+        if (req.file) res.status(200).send({image_link: `http://${host}:5000/img/helps/${req.user}`});
+        else res.status(500).send();
+    } else res.status(401).send();
 });
 
 app.post('/register/user/newimg', upload.single('avatar'), function(req, res) {
@@ -970,20 +1021,26 @@ app.post('/register/user/newimg', upload.single('avatar'), function(req, res) {
 
     console.log('here');
     if (req.user) {
-        console.log(req.file)
-        if (req.file) {
-            res.status(200).send({avatar: `http://${host}:5000/img/users/${req.user}.jpg`});
-        } else res.status(500).send();
+        if (req.file) res.status(200).send({avatar: `http://${host}:5000/img/users/${req.user}.jpg`});
+        else res.status(500).send();
     } else res.status(401).send();
 });
 
 app.post('/register/ad/newimg', upload.single('image'), function(req, res) {
     setHeaders(res, true);
 
-    if (req.user && req.body.image) {
-        res.status(200).send({image_link: `http://${host}:5000/img/ads/${req.user}`});
-    } else if (!res.user) res.status(401).send();
-    else res.status(500).send();
+    if (req.user) {
+        if (req.file) res.status(200).send({image_link: `http://${host}:5000/img/ads/${req.user}`});
+        else res.status(500).send();
+    } else res.status(401).send();
 });
+
+app.post('/register/user/save', function(req, res) {
+    setHeaders(res, true);
+
+    if (req.user) {
+        
+    }
+})
 
 app.listen(5000);

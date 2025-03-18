@@ -24,8 +24,9 @@ export default function Page() {
         });
     }
 
-    async function send() {
-
+    async function send(e) {
+        e.preventDefault();
+        
     }
 
     async function BackToProfile() {
